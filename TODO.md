@@ -1,8 +1,6 @@
 
 # TODO 
 
-- [ ] DO THIS FIRST!!! (don't lose your work my man) push to Github
-    + update the README before doing this (if you make it public anyway)
 - [ ] set up R package structure (and roxygen docs)
 - [ ] vignette and/or links to blog posts
 - [ ] testing

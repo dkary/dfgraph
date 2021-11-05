@@ -9,7 +9,7 @@ parse_script <- function(path_to_file) {
 }
 
 # Get parsed data detail from expression
-# - x = an expression returned from parse_script()
+# - x: one element of list of expressions returned by parse_script()
 get_parse_data <- function(x_eval, includeText = TRUE) {
     getParseData(
         # a hack to get a dataframe with just one expression (seems inefficient)
@@ -18,73 +18,68 @@ get_parse_data <- function(x_eval, includeText = TRUE) {
     )
 }
 
-# Pull assigned variables and associated code
+# Convert an expression into a parsed dataframe
 # - x: one element of list of expressions returned by parse_script()
-get_assignments <- function(x) {
-    if (is.call(x)) {
-        # we only care about called expressions (I think)
-        # the is.name() excludes assignment of the df$col variety
-        # we'll only grab one assignment (unless control flow is present)
-        # i.e., for nested assignments, we only get the first one
-        if (rlang::is_call(x, "<-") && (is.name(x[[2]]))) {
-            out <- get_parse_data(x)
-            out$target <- rlang::as_string(x[[2]])
-            out$type <- "assign"
-            out[out$parent==0, c("target", "type", "text")]
+# - type: either "assign" (i.e., assignment) or "effect" (i.e., side-effect)
+expression_to_df <- function(x, type) {
+    out <- get_parse_data(x)
+    if (type == "assign") {
+        # we want the dataframe target for column assignment
+        if (rlang::is_call(x[[2]], "$")) {
+            out$target <- rlang::as_string(x[[2]][[2]])
         } else {
-            # this catches assignments that occur later (e.g., within if/else)
-            # since they will be further down the tree (hence recursion)
-            dplyr::bind_rows(lapply(x, get_assignments))
+            out$target <- rlang::as_string(x[[2]])
+        }
+    } else {
+        # we want the last function if there's a pipeline
+        if (rlang::is_call(x, c("%>%", "|>"))) {
+            out$target <- rlang::as_string(x[[3]][[1]])
+        } else {
+            out$target <- rlang::as_string(x[[1]])
         }
     }
+    out$type <- type
+    out[out$parent==0, c("target", "type", "text")]
 }
 
-# Pull first function in non-assignment expression (and associated code)
+# Pull node information for a given expression (assignment or effect)
 # - x: one element of list of expressions returned by parse_script()
-get_effects <- function(
-    x, exclude = c("library", "print"), ignore = c("if", "==", "{", "for", ":")
+# - exclude: expressions beginning with these functions will be excluded from output
+# - ignore: expressions beginning with these will lead to recursion
+parse_nodes <- function(
+    x, 
+    exclude = c("library", "print"), 
+    ignore = c("if", "==", "{", "for", ":")
 ) {
     if (is.call(x)) {
-        # we'll exclude assignment or specified functions
-        if (rlang::is_call(x, c("<-", exclude))) {
+        if (rlang::is_call(x, exclude)) {
             # an empty dataframe simplifies downstream calculations
             data.frame()
-        } else if (rlang::is_call(x, ignore)) {
-            # encountering certain functions (usually control flow) leads to 
-            # recursing down the tree to find those that may act on data
-            data.frame(dplyr::bind_rows(lapply(x, get_effects)))
+        } else if (rlang::is_call(x, "<-")) {
+            expression_to_df(x, "assign")
+        } else if (!rlang::is_call(x, ignore)) {
+            expression_to_df(x, "effect")
         } else {
-            out <- get_parse_data(x)
-            # we want the last function in a pipeline
-            if (rlang::is_call(x, c("%>%", "|>"))) {
-                out$target <- rlang::as_string(x[[3]][[1]])
-                # otherwise, we pull the first function
-            } else {
-                out$target <- rlang::as_string(x[[1]])
-            }
-            out$type <- "effect"
-            out[out$parent==0, c("target", "type", "text")]
+            dplyr::bind_rows(lapply(x, parse_nodes))
         }
     }
 }
 
-# Pull together all assignments and effects into a dataframe
+# Pull together all node information into a dataframe
 # - exprs: list of expressions returned by parse_script()
-get_parsed <- function(exprs) {
-    parsed <- lapply(seq_along(exprs), function(i) {
-        dplyr::bind_rows(
-            get_assignments(exprs[[i]]) |> dplyr::mutate(expr_id = i),
-            get_effects(exprs[[i]]) |> dplyr::mutate(expr_id = i)
-        )
+parse_all_nodes <- function(exprs) {
+    nodes <- lapply(seq_along(exprs), function(i) {
+        parse_nodes(exprs[[i]]) |> dplyr::mutate(expr_id = i)
     }) |> 
-        dplyr::bind_rows()
-    parsed$parse_id <- as.integer(row.names(parsed))
-    parsed[, c("parse_id", "expr_id", "target", "type", "text")]
+        dplyr::bind_rows() |>
+        tibble::as_tibble()
+    nodes$node_id <- as.integer(row.names(nodes))
+    nodes[, c("node_id", "expr_id", "target", "type", "text")]
 }
 
 # Pull dependencies from parsed dataframe
-# - parsed: dataframe returned by get_parsed()
-identify_dependencies <- function(parsed) {
+# - parsed: dataframe returned by parse_all_nodes()
+parse_dependencies <- function(nodes) {
     identify_one <- function(df, assigned) {
         x <- rlang::parse_expr(df$text)
         if (df$type == "assign") {
@@ -93,16 +88,16 @@ identify_dependencies <- function(parsed) {
             df_parsed <- get_parse_data(x)
         }
         out <- data.frame(
-            depends = unique(df_parsed[df_parsed$token == "SYMBOL", ]$text)
+            dependency = unique(df_parsed[df_parsed$token == "SYMBOL", ]$text)
         )
         if (nrow(out) != 0) {
-            out$parse_id <- df[["parse_id"]]
-            out[out$depends %in% assigned, c("parse_id", "depends")]
+            out$node_id <- df[["node_id"]]
+            out[out$dependency %in% assigned, c("node_id", "dependency")]
         }
     }
-    assigned <- unique(parsed[parsed$type == "assign", ]$target)
-    dependencies <- lapply(1:nrow(parsed), function(i) {
-        identify_one(parsed[i,], assigned) 
+    assigned <- unique(nodes[nodes$type == "assign", ]$target)
+    lapply(1:nrow(nodes), function(i) {
+        identify_one(nodes[i,], assigned) 
     }) |> 
         dplyr::bind_rows()
 }

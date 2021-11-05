@@ -43,7 +43,7 @@ f %>%
 
 for (i in 1:10) {
     z <- "hey homey"
-    print(param + i)
+    write_to_excel(z)
 }
 
 filter(e, z == "sketch") %>% output_data()

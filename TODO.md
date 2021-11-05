@@ -3,8 +3,8 @@
 
 ## Data Prep
 
-- [ ] catch assignment like df$col
-- [ ] correct ordering with conditionals
+- [x] catch assignment like df$col
+- [x] correct ordering with conditionals
     + whereas now all assignment come before all effects
 - [ ] target and dependency numbering, so we can:
     + have target (objects) with the same name occur as separate nodes

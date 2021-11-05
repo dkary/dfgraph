@@ -9,5 +9,5 @@ exprs[[9]] # expression with a pipeline
 lobstr::ast(!!exprs[[9]]) # viewing a tree structure
 
 # parse away
-parsed <- get_parsed(exprs)
-dependencies <- identify_dependencies(parsed)
+nodes <- parse_all_nodes(exprs)
+dependencies <- parse_dependencies(nodes)

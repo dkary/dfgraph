@@ -4,7 +4,7 @@ source("R/parse.R")
 source("R/plot.R")
 
 # all-in-one version
-plot_flow("example.R")
+plot_flow("stirfry.R")
 
 # step-by-step version
 exprs <- parse_script("example.R")

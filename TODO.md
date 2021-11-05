@@ -15,10 +15,6 @@
     + ggdag
     + dagitty (seems like Rcpp is also needed for this one to function)
 
-## Limitations
-
-- We can misidentify dependencies due to name scoping (e.g., column "d" vs. dataframe "d"). Is this solvable? (seems unlikely)
-
 ## Data Prep
 
 - [x] catch assignment like df$col

@@ -1,12 +1,20 @@
 
 # TODO 
 
+## Limitations
+
+- We can misidentify dependencies due to name scoping (e.g., column "d" vs. dataframe "d"). Is this solvable? (seems unlikely)
+
 ## Data Prep
 
 - [x] catch assignment like df$col
 - [x] correct ordering with conditionals
     + whereas now all assignment come before all effects
-- [ ] target and dependency numbering, so we can:
+- [ ] collapse assignments that only depend on themselves to previous nodes
+- [ ] ignore function assignment
+- [ ] maybe treat apply (and purrr functions) like for loops
+- [ ] catch assignment with "="
+- [x] target and dependency numbering, so we can:
     + have target (objects) with the same name occur as separate nodes
     + have the correct node referenced in dependencies (i.e., the most recent with the matching name)
  

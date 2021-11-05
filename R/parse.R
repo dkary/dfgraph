@@ -45,31 +45,31 @@ expression_to_df <- function(x, type) {
 # Pull node information for a given expression (assignment or effect)
 # - x: one element of list of expressions returned by parse_script()
 # - exclude: expressions beginning with these functions will be excluded from output
-# - ignore: expressions beginning with these will lead to recursion
-parse_nodes <- function(
+# - recurse: expressions beginning with these will lead to recursion
+parse_expression <- function(
     x, 
     exclude = c("library", "print"), 
-    ignore = c("if", "==", "{", "for", ":")
+    recurse = c("if", "==", "{", "for", ":")
 ) {
     if (is.call(x)) {
         if (rlang::is_call(x, exclude)) {
-            # an empty dataframe simplifies downstream calculations
+            # an empty dataframe simplifies downstream operations
             data.frame()
         } else if (rlang::is_call(x, "<-")) {
             expression_to_df(x, "assign")
-        } else if (!rlang::is_call(x, ignore)) {
+        } else if (!rlang::is_call(x, recurse)) {
             expression_to_df(x, "effect")
         } else {
-            dplyr::bind_rows(lapply(x, parse_nodes))
+            dplyr::bind_rows(lapply(x, parse_expression))
         }
     }
 }
 
 # Pull together all node information into a dataframe
 # - exprs: list of expressions returned by parse_script()
-parse_all_nodes <- function(exprs) {
+parse_nodes <- function(exprs) {
     nodes <- lapply(seq_along(exprs), function(i) {
-        parse_nodes(exprs[[i]]) |> dplyr::mutate(expr_id = i)
+        parse_expression(exprs[[i]]) |> dplyr::mutate(expr_id = i)
     }) |> 
         dplyr::bind_rows() |>
         tibble::as_tibble()
@@ -78,8 +78,8 @@ parse_all_nodes <- function(exprs) {
 }
 
 # Pull dependencies from parsed dataframe
-# - parsed: dataframe returned by parse_all_nodes()
-parse_dependencies <- function(nodes) {
+# - nodes: dataframe returned by parse_nodes()
+get_dependencies <- function(nodes) {
     identify_one <- function(df, assigned) {
         x <- rlang::parse_expr(df$text)
         if (df$type == "assign") {
@@ -100,4 +100,33 @@ parse_dependencies <- function(nodes) {
         identify_one(nodes[i,], assigned) 
     }) |> 
         dplyr::bind_rows()
+}
+
+# Pull dependency node numbers
+get_dependency_nodes <- function(dependencies, nodes) {
+    # prepare all possible dependency node identifiers (for joining)
+    n <- nodes[nodes$type == "assign", c("node_id", "target")]
+    names(n) <-  c("node_id_dependency", "dependency")
+    
+    # merge to get possible dependency nodes
+    d <- merge(dependencies, n, by = "dependency")
+    
+    # get closest dependency node
+    d <- d[d[["node_id_dependency"]] < d[["node_id"]], ]
+    out <- aggregate(
+        d[["node_id_dependency"]], 
+        by = list(d[["node_id"]], d[["dependency"]]), 
+        FUN = "max"
+    )
+    # tidy up
+    names(out) <- c("node_id", "dependency", "node_id_dependency")
+    out <- out[order(out[["node_id"]]),]
+    rownames(out) <- NULL
+    out
+}
+
+# A thin wrapper for the two dependency functions
+parse_dependencies <- function(nodes) {
+    d <- get_dependencies(nodes)
+    get_dependency_nodes(d, nodes)
 }

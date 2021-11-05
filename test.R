@@ -1,13 +1,17 @@
 # test the workflow
 
 source("R/parse.R")
+source("R/plot.R")
+
+# all-in-one version
+plot_flow("example.R")
+
+# step-by-step version
 exprs <- parse_script("example.R")
-
-# some exploration
-length(exprs) # the number of unique expression elements
-exprs[[9]] # expression with a pipeline
-lobstr::ast(!!exprs[[9]]) # viewing a tree structure
-
-# parse away
+lobstr::ast(!!exprs[[11]]) # viewing a tree structure
 nodes <- parse_nodes(exprs)
 edges <- parse_edges(nodes)
+dot <- edges_to_dot(edges)
+dag <- dagitty::dagitty(dot)
+tidy_dag <- ggdag::tidy_dagitty(dag)
+ggdag::ggdag(tidy_dag)

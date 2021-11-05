@@ -130,5 +130,8 @@ get_dependency_nodes <- function(dependencies, nodes) {
 # - nodes: dataframe returned by parse_nodes()
 parse_edges <- function(nodes) {
     d <- get_dependencies(nodes)
-    get_dependency_nodes(d, nodes)
+    e <- get_dependency_nodes(d, nodes)
+    n <- nodes[, c("node_id", "target")]
+    out <- merge(n, e, by = "node_id")
+    out[, c("node_id", "target", "node_id_dependency", "dependency")]
 }

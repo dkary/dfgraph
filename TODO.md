@@ -10,6 +10,9 @@
 - [x] catch assignment like df$col
 - [x] correct ordering with conditionals
     + whereas now all assignment come before all effects
+- [ ] work on incorporating with ggdag package
+    + should edges look more like the output of ggdag::tidy_dagitty?
+    + probably better: produce a dot langauge representation of nodes/edges, which you can then graph using ggdag (or similar)
 - [ ] collapse assignments that only depend on themselves to previous nodes
 - [ ] ignore function assignment
 - [ ] maybe treat apply (and purrr functions) like for loops
@@ -19,6 +22,8 @@
     + have the correct node referenced in dependencies (i.e., the most recent with the matching name)
  
 ## DAG Representation
+
+Start here. Find the simplest
 
 - [ ] `to_dotfile`: converting parsed/dependencies to a useful format (e.g., dotfile)
 

@@ -125,8 +125,10 @@ get_dependency_nodes <- function(dependencies, nodes) {
     out
 }
 
-# A thin wrapper for the two dependency functions
-parse_dependencies <- function(nodes) {
+# Make a dataframe that defines edges (i.e., data flow arrows)
+# This is a thin wrapper for the two dependency functions
+# - nodes: dataframe returned by parse_nodes()
+parse_edges <- function(nodes) {
     d <- get_dependencies(nodes)
     get_dependency_nodes(d, nodes)
 }

@@ -10,4 +10,4 @@ lobstr::ast(!!exprs[[9]]) # viewing a tree structure
 
 # parse away
 nodes <- parse_nodes(exprs)
-dependencies <- parse_dependencies(nodes)
+edges <- parse_edges(nodes)

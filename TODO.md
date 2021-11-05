@@ -1,6 +1,12 @@
 
 # TODO 
 
+- [ ] DO THIS FIRST!!! (don't lose your work my man) push to Github
+    + update the README before doing this (if you make it public anyway)
+- [ ] set up R package structure (and roxygen docs)
+- [ ] vignette and/or links to blog posts
+- [ ] testing
+
 ## Dependencies
 
 - probably no need for these:
@@ -36,6 +42,7 @@
 ## Graphing
    
 - [x] `edges_to_dot()`: converting parsed/dependencies to a useful format (e.g., dotfile)
+- [ ] aliases (the target name) instead of the current name+ID displayed
 - [ ] get a nice default appearance, potentially with a wrapper function
 - [ ] (if time) incorporate interactivity in output
 - [ ] try it on some real life code from SA Github

@@ -18,28 +18,42 @@ get_parse_data <- function(x_eval, includeText = TRUE) {
     )
 }
 
-# Convert an expression into a parsed dataframe
+# Get the assignment (if applicable) of an expression
 # - x: one element of list of expressions returned by parse_script()
-# - type: either "assign" (i.e., assignment) or "effect" (i.e., side-effect)
-expression_to_df <- function(x, type) {
-    out <- get_parse_data(x)
-    if (type == "assign") {
-        # we want the dataframe target for column assignment
-        if (rlang::is_call(x[[2]], "$")) {
-            out$target <- rlang::as_string(x[[2]][[2]])
-        } else {
-            out$target <- rlang::as_string(x[[2]])
-        }
+get_assign <- function(x) {
+    if (rlang::is_call(x[[2]], "$")) {
+        rlang::as_string(x[[2]][[2]])
+    } else if (is.call(x)) {
+        rlang::as_string(x[[2]])
     } else {
-        # we want the last function if there's a pipeline
-        if (rlang::is_call(x, c("%>%", "|>"))) {
-            out$target <- rlang::as_string(x[[3]][[1]])
-        } else {
-            out$target <- rlang::as_string(x[[1]])
-        }
+        NA
     }
-    out$type <- type
-    out[out$parent==0, c("target", "type", "text")]
+}
+
+# Get the "effect" (i.e., primary function) of an expression
+# - x: one element of list of expressions returned by parse_script()
+get_effect <- function(x) {
+    if (rlang::is_call(x, c("%>%", "|>"))) {
+        rlang::as_string(x[[3]][[1]])
+    } else if (is.call(x)) {
+        rlang::as_string(x[[1]])
+    } else {
+        NA
+    }
+}
+
+# Get assignments, effects, and text of an expression
+# - x: one element of list of expressions returned by parse_script()
+get_assign_effect_text <- function(x) {
+    out <- get_parse_data(x)
+    if (rlang::is_call(x, "<-")) {
+        out$assign <- get_assign(x)
+        out$effect <- get_effect(x[[3]])
+    } else {
+        out$assign <- NA
+        out$effect <- get_effect(x)
+    }
+    out[out$parent==0, c("assign", "effect", "text")]
 }
 
 # Pull node information for a given expression (assignment or effect)
@@ -55,10 +69,8 @@ parse_expression <- function(
         if (rlang::is_call(x, exclude)) {
             # an empty dataframe simplifies downstream operations
             data.frame()
-        } else if (rlang::is_call(x, "<-")) {
-            expression_to_df(x, "assign")
         } else if (!rlang::is_call(x, recurse)) {
-            expression_to_df(x, "effect")
+            get_assign_effect_text(x)
         } else {
             dplyr::bind_rows(lapply(x, parse_expression))
         }
@@ -74,15 +86,15 @@ parse_nodes <- function(exprs) {
         dplyr::bind_rows() |>
         tibble::as_tibble()
     nodes$node_id <- as.integer(row.names(nodes))
-    nodes[, c("node_id", "expr_id", "target", "type", "text")]
+    nodes[, c("node_id", "expr_id", "assign", "effect", "text")]
 }
 
 # Pull dependencies from parsed dataframe
 # - nodes: dataframe returned by parse_nodes()
 get_dependencies <- function(nodes) {
     identify_one <- function(df, assigned) {
-        x <- rlang::parse_expr(df$text)
-        if (df$type == "assign") {
+        x <- rlang::parse_expr(df[["text"]])
+        if (!is.na(df[["assign"]])) {
             df_parsed <- get_parse_data(x[[3]])
         } else {
             df_parsed <- get_parse_data(x)
@@ -95,7 +107,7 @@ get_dependencies <- function(nodes) {
             out[out$dependency %in% assigned, c("node_id", "dependency")]
         }
     }
-    assigned <- unique(nodes[nodes$type == "assign", ]$target)
+    assigned <- unique(nodes[["assign"]])
     lapply(1:nrow(nodes), function(i) {
         identify_one(nodes[i,], assigned) 
     }) |> 
@@ -105,7 +117,7 @@ get_dependencies <- function(nodes) {
 # Pull dependency node numbers
 get_dependency_nodes <- function(dependencies, nodes) {
     # prepare all possible dependency node identifiers (for joining)
-    n <- nodes[nodes$type == "assign", c("node_id", "target")]
+    n <- nodes[!is.na(nodes[["assign"]]), c("node_id", "assign")]
     names(n) <-  c("node_id_dependency", "dependency")
     
     # merge to get possible dependency nodes
@@ -131,7 +143,7 @@ get_dependency_nodes <- function(dependencies, nodes) {
 parse_edges <- function(nodes) {
     d <- get_dependencies(nodes)
     e <- get_dependency_nodes(d, nodes)
-    n <- nodes[, c("node_id", "target")]
+    n <- nodes[, c("node_id", "assign", "effect")]
     out <- merge(n, e, by = "node_id")
-    out[, c("node_id", "target", "node_id_dependency", "dependency")]
+    out[, c("node_id", "assign", "effect", "node_id_dependency", "dependency")]
 }

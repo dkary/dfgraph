@@ -7,11 +7,9 @@ source("R/plot.R")
 plot_flow("stirfry.R")
 
 # step-by-step version
-exprs <- parse_script("example.R")
-lobstr::ast(!!exprs[[11]]) # viewing a tree structure
+exprs <- parse_script("stirfry.R")
+lobstr::ast(!!exprs[[16]]) # viewing a tree structure
 nodes <- parse_nodes(exprs)
-edges <- parse_edges(nodes)
+edges <- parse_edges(nodes) |> enrich_edges()
 dot <- edges_to_dot(edges)
-dag <- dagitty::dagitty(dot)
-tidy_dag <- ggdag::tidy_dagitty(dag)
-ggdag::ggdag(tidy_dag)
+DiagrammeR::grViz(dot)

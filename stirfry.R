@@ -15,11 +15,11 @@ wok <- get("wok", "cupboard")
 oil <- get("oil", "cupboard")
 wok <- wok |>
     add(oil) |>
-    cook(temp = "hi", min = 3)
+    heat(temp = "hi", min = 3)
 tofu <- cube(tofu)
-tofu <- wok |>
+wok <- wok |>
     add(tofu) |>
-    cook(temp = "med-hi", min = 5)
+    fry(temp = "med-hi", min = 5)
 
 # 3. Add the Veggies
 peppers <- get("peppers", "fridge")
@@ -32,8 +32,8 @@ veggies <- mixing_bowl |>
     mix()
 stirfry <- wok |>
     add(veggies) |>
-    cook(temp = "med", min = 5) |>
-    cook(temp = "low", min = 10)
+    fry(temp = "med", min = 5) |>
+    fry(temp = "low", min = 10)
 
 # 4. Serve!
 bowls <- get("bowls", "cupboard")

@@ -81,11 +81,16 @@ parse_expression <- function(
 # - exprs: list of expressions returned by parse_script()
 parse_nodes <- function(exprs) {
     nodes <- lapply(seq_along(exprs), function(i) {
-        parse_expression(exprs[[i]]) |> dplyr::mutate(expr_id = i)
-    }) |> 
-        dplyr::bind_rows() |>
-        tibble::as_tibble()
-    nodes$node_id <- as.integer(row.names(nodes))
+        x <- parse_expression(exprs[[i]])
+        if (nrow(x) > 0) {
+            x[["expr_id"]] <- i
+        }
+        x
+    })
+    nodes <- do.call(rbind, nodes)
+    nodes[["node_id"]] <- 1:nrow(nodes)
+    # both "<" and "-" can't be used in node names in dotfiles
+    nodes[["effect"]] <- gsub("<-", "assign", nodes[["effect"]])
     nodes[, c("node_id", "expr_id", "assign", "effect", "text")]
 }
 

@@ -2,8 +2,8 @@
 
 # Extract nodes from R code into a dataframe
 get_nodes <- function(path_to_file) {
-    exprs <- parse_script("stirfry.R")
-    parse_nodes(exprs) 
+    exprs <- parse_script(path_to_file)
+    parse_nodes(exprs)
 }
 
 # At least for now, wrap the existing edges functions
@@ -13,7 +13,6 @@ get_edges <- function(nodes) {
     enrich_edges(edges)
 }
 
-# TODO: pull in nodes$text for hover
 # Convert nodes/edges into a dotfile format for dataflow graph
 get_dot <- function(nodes, edges) {
     edges$from <- ifelse(

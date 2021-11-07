@@ -12,20 +12,34 @@ enrich_edges <- function(x) {
         dplyr::arrange(.data[["node_id"]], .data[["node_id_dependency"]])
 }
 
-# TODO: 
-# - rename this to get_attributes(nodes, edges)
+# Identify node attributes for the dot specification
 # - also pull in nodes to display text on hover
-get_styles <- function(x) {
-    box <- data.frame(
-        node = unique(x[is.na(x[["dependency_effect"]]), c("dependency")]),
-        shape = "box", fillcolor = "'#cce0ff'"
-    )
-    circle <- data.frame(
-        node = unique(x$effect), shape = "circle", fillcolor = "'#f9ffe6'"
-    )
-    df <- dplyr::bind_rows(box, circle)
-    df$label <- gsub("_[0-9].*", "", df$node)
-    paste0(df$node, " [shape=", df$shape, ", style=filled, fillcolor=", df$fillcolor, 
-           ", label=", df$label, "]"
+get_node_dot_attributes <- function(nodes, edges) {
+    # NOTE: This is clunky. Probably eventually pull all this from nodes instead.
+    input <- edges[is.na(edges[["dependency_effect"]]), c("node_id_dependency", "dependency")]
+    names(input) <- c("node_id", "name")
+    input[["shape"]] <- "box"
+    input[["fillcolor"]] <- "'#cce0ff'"
+    
+    mutate <- edges[, c("node_id", "effect")]
+    names(mutate) <- c("node_id", "name")
+    mutate <- mutate[!duplicated(mutate),]
+    mutate[["shape"]] <- "circle"
+    mutate[["fillcolor"]] <- "'#f9ffe6'"
+    
+    df <- rbind(input, mutate)
+    # TODO: this might not be what we want for labelling numbered assignments
+    # (since all numbers will be stripped)
+    df[["label"]] <- gsub("_[0-9].*", "", df[["name"]])
+    df <- merge(df, nodes[, c("node_id", "text")], by = "node_id")
+    
+    # TEMPORARY: dealing with escape sequence issues
+    df$text <- gsub('\"', '', df$text)
+    
+    paste0(
+        df$name, " [shape=", df$shape, 
+        ", style=filled, fillcolor=", df$fillcolor,  
+        ", label=", df$label, 
+        ", tooltip='", df$text, "']"
     )
 }

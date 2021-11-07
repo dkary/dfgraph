@@ -15,15 +15,15 @@ get_edges <- function(nodes) {
 
 # TODO: pull in nodes$text for hover
 # Convert nodes/edges into a dotfile format for dataflow graph
-get_dot <- function(edges) {
+get_dot <- function(nodes, edges) {
     edges$from <- ifelse(
         is.na(edges$dependency_effect), edges$dependency, edges$dependency_effect
     )
     edges$dot <- paste(edges$from, "->", edges$effect)
-    styles <- get_styles(edges)
+    attributes <- get_node_dot_attributes(nodes, edges)
     paste(
         "digraph {", 
-        paste(styles, collapse = " "),
+        paste(attributes, collapse = " "),
         paste(edges$dot, collapse = " "), "}"
     )
 }
@@ -31,6 +31,6 @@ get_dot <- function(edges) {
 plot_flow <- function(path_to_file) {
     nodes <- get_nodes(path_to_file)
     edges <- get_edges(nodes)
-    dot <- get_dot(edges)
+    dot <- get_dot(nodes, edges)
     DiagrammeR::grViz(dot)
 }

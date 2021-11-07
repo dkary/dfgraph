@@ -10,5 +10,5 @@ plot_flow("stirfry.R")
 # step-by-step version
 nodes <- get_nodes("stirfry.R")
 edges <- get_edges(nodes)
-dot <- get_dot(edges)
+dot <- get_dot(nodes, edges)
 DiagrammeR::grViz(dot)

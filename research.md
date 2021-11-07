@@ -8,6 +8,13 @@ Taking a look at what's out there, whether this tool would be useful, and how I 
 - https://renkun.me/2020/11/08/using-parse-data-to-analyze-r-code/
 - Advanced R chapter on Expressions
 
+## Interactivity
+
+Looking at Graphviz interactivity options:
+
+- https://stackoverflow.com/questions/14838820/interactive-graphviz-viewer-with-basic-node-edge-filtering
+    + https://gephi.org
+
 ## Does it exist? 
 
 - Find out what exists out there.

@@ -1,5 +1,17 @@
 # make tasty food with R code
 
+get <- function(item, location) { 
+    path <- find_shortest_path(location)
+    retrieve(item, path)
+}
+add <- function(vessel, item) { }
+cook <- function(vessel, min) { }
+heat <- function(vessel, temp, min) { }
+fry <- function(vessel, temp, min) { }
+chop <- function(...) { }
+mix <- function(vessel) { }
+serve <- function(vessel) { }
+
 # 1. Start the Rice
 water <- get("water", "faucet")
 rice <- get("rice", "pantry")
@@ -13,31 +25,35 @@ cooked_rice <- rice_cooker |>
 tofu <- get("tofu", "fridge")
 wok <- get("wok", "cupboard")
 oil <- get("oil", "cupboard")
-wok <- wok |>
+heated_wok <- wok |>
     add(oil) |>
     heat(temp = "hi", min = 3)
-tofu <- cube(tofu)
-wok <- wok |>
-    add(tofu) |>
+chopped_tofu <- chop(tofu)
+seared_tofu <- heated_wok |>
+    add(chopped_tofu) |>
     fry(temp = "med-hi", min = 5)
 
 # 3. Add the Veggies
 peppers <- get("peppers", "fridge")
 onions <- get("onions", "pantry")
+spices <- get("spices", "pantry")
 mixing_bowl <- get("mixing_bowl", "cupboard")
-veggies <- cube(peppers, onions)
-veggies <- mixing_bowl |>
+veggies <- chop(peppers, onions)
+mixed_veggies <- mixing_bowl |>
     add(veggies) |>
     add(oil) |>
+    add(spices) |>
     mix()
-stirfry <- wok |>
-    add(veggies) |>
+stirfry <- seared_tofu |>
+    add(mixed_veggies) |>
     fry(temp = "med", min = 5) |>
     fry(temp = "low", min = 10)
 
 # 4. Serve!
 bowls <- get("bowls", "cupboard")
+chopsticks <- get("chopsticks", "cupboard")
 bowls |>
     add(cooked_rice) |>
     add(stirfry) |>
+    add(chopsticks) |>
     serve()

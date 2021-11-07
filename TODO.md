@@ -12,8 +12,7 @@
     + tibble
 - these are probably worthwhile
     + rlang
-    + ggdag
-    + dagitty (seems like Rcpp is also needed for this one to function)
+    + DiagrammeR
 
 ## Data Prep
 
@@ -26,7 +25,7 @@
 - [ ] collapse assignments that only depend on themselves to previous nodes
 - [ ] get sequential integers for repeated occurrences of assignment nodes
     + getting rid of the current node_id workaround
-- [ ] ignore function assignment
+- [x] ignore function assignment
 - [ ] maybe treat apply (and purrr functions) like for loops
 - [ ] catch assignment with "="
 - [x] target and dependency numbering, so we can:
@@ -36,15 +35,18 @@
 ## Graphing
    
 - [x] `edges_to_dot()`: converting parsed/dependencies to a useful format (e.g., dotfile)
-- [ ] aliases (the target name) instead of the current name+ID displayed
-- [ ] get a nice default appearance, potentially with a wrapper function
+- [x] aliases (the target name) instead of the current name+ID displayed
+- [x] get a nice default appearance, potentially with a wrapper function
 - [ ] (if time) incorporate interactivity in output
 - [ ] try it on some real life code from SA Github
 - [ ] (maybe) convert nesting to pipes for display (or use the srcref attribute from parse())
 - [ ] (maybe) wrapper func to save to dotfile for editing and replotting
+- [x] correctly work with escaped quotes in tooltips
+- [ ] increase tooltip size (and maybe responsiveness)
+- [ ] better implementation of numbers stripped from node names for labelling (e.g., if we want to show attributes, we would want the exact name assigned, even if it has numbers)
+- [ ] correctly represent `|>` in tooltips (instead of using the parsed representation which converts to nested functions)
 
 ## Lower Priority
 
 - [ ] consider capturing control flow and nesting in parsed output (which could seemingly be useful to visualize)
-- [ ] Be able to view corresponding code on clicking a node
     + Interesting that the native pipe is automatically converted to nested calls in the expression. Makes sense, but won't be nice for viewing code if that feature is included

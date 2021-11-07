@@ -32,14 +32,12 @@ get_node_dot_attributes <- function(nodes, edges) {
     # (since all numbers will be stripped)
     df[["label"]] <- gsub("_[0-9].*", "", df[["name"]])
     df <- merge(df, nodes[, c("node_id", "text")], by = "node_id")
-    
-    # TEMPORARY: dealing with escape sequence issues
-    df$text <- gsub('\"', '', df$text)
+    df[["text"]] <- gsub('\"', '&quot;', df[["text"]])
     
     paste0(
-        df$name, " [shape=", df$shape, 
-        ", style=filled, fillcolor=", df$fillcolor,  
-        ", label=", df$label, 
-        ", tooltip='", df$text, "']"
+        df[["name"]], " [shape=", df[["shape"]], 
+        ", style=filled, fillcolor=", df[["fillcolor"]],  
+        ", label=", df[["label"]], 
+        ", tooltip='", df[["text"]], "']"
     )
 }

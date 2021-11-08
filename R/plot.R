@@ -37,9 +37,7 @@ get_node_dot_attributes <- function(nodes, edges) {
     mutate[["fillcolor"]] <- "'#f9ffe6'"
     
     df <- rbind(input, mutate)
-    # TODO: this might not be what we want for labelling numbered assignments
-    # (since all numbers will be stripped)
-    df[["label"]] <- gsub("n[0-9].*_", "", df[["name"]])
+    df[["label"]] <- gsub("n[0-9]*_", "", df[["name"]])
     df <- merge(df, nodes[, c("node_id", "text")], by = "node_id")
     df[["text"]] <- gsub('\"', '&quot;', df[["text"]])
     

@@ -9,13 +9,20 @@ a <- data.frame(
 )
 print(a)
 
+x <- read_data("path_to_file")
 b <- mutate(a, name = "boogers") %>% select(get, some, vars)
-c <- mutate(b, place = "nostrils")
-d <- get_some(a, b, c, dumb, stuff, too)
+c <- mutate(a, place = "nostrils")
+output_data(x)
+
+d <- get_some(dumb, stuff, too)
+d <- mutate(d, col0 = "string")
+d$col1 <- pull_some_strings()
+d[["col2"]] <- "some other string"
+d["col3"] <- "yet another"
 
 e <- mutate(b, stuff = "dumb dumb") %>%
     filter(lordy = faith_no_more) %>%
-    left_join(c) %>%
+    left_join(x) %>%
     left_join(d) %>%
     arrange(boo_radley)
 
@@ -50,7 +57,7 @@ filter(e, z == "sketch") %>% output_data()
 output_data(b)
 output_data(filter(c, z = "stuffy"))
 
-f$stuff <- "stuff"
-x <- 1
+e$stuff <- "other_stuff"
+x <- filter(e, condition == "okay")
 y <- 2
 z <- x <- y

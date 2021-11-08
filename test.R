@@ -13,3 +13,11 @@ nodes <- get_nodes("stirfry.R")
 edges <- get_edges(nodes)
 dot <- get_dot(nodes, edges)
 DiagrammeR::grViz(dot)
+
+# working on a smaller set
+# TODO: collapsing the "d" assignments in example.R
+exprs <- parse_script("example.R")[1:15]
+nodes <- parse_nodes(exprs)
+edges <- get_edges(nodes)
+dot <- get_dot(nodes, edges)
+DiagrammeR::grViz(dot)

@@ -18,19 +18,8 @@ get_parse_data <- function(x_eval, includeText = TRUE) {
     )
 }
 
-# Get the assignment (if applicable) of an expression
-# - x: one element of list of expressions returned by parse_script()
-get_assign <- function(x) {
-    if (rlang::is_call(x[[2]], "$")) {
-        rlang::as_string(x[[2]][[2]])
-    } else if (is.call(x)) {
-        rlang::as_string(x[[2]])
-    } else {
-        NA
-    }
-}
-
-# Get the "effect" (i.e., primary function) of an expression
+# Get the "effect" (i.e., primary function) of a statement (in an expression)
+# Intended to be called from parse_statement()
 # - x: one element of list of expressions returned by parse_script()
 get_effect <- function(x) {
     if (rlang::is_call(x, c("%>%", "|>"))) {
@@ -44,16 +33,22 @@ get_effect <- function(x) {
 
 # Get assignments, effects, and text of an expression
 # - x: one element of list of expressions returned by parse_script()
-get_assign_effect_text <- function(x) {
+parse_statement <- function(x) {
     out <- get_parse_data(x)
+    out[["assign"]] <- NA
+    out[["member"]] <- NA
     if (rlang::is_call(x, "<-")) {
-        out[["assign"]] <- get_assign(x)
+        if (rlang::is_call(x[[2]], c("$", "[", "[["))) {
+            out[["assign"]] <- rlang::as_string(x[[2]][[2]])
+            out[["member"]] <- rlang::as_string(x[[2]][[3]])
+        } else {
+            out[["assign"]] <- rlang::as_string(x[[2]])
+        }
         out[["effect"]] <- get_effect(x[[3]])
     } else {
-        out[["assign"]] <- NA
         out[["effect"]] <- get_effect(x)
     }
-    out[out[["parent"]]==0, c("assign", "effect", "text")]
+    out[out[["parent"]]==0, c("assign", "member", "effect", "text")]
 }
 
 # Pull node information for a given expression (assignment or effect)
@@ -70,7 +65,7 @@ parse_expression <- function(
             # an empty dataframe simplifies downstream operations
             data.frame()
         } else if (!rlang::is_call(x, recurse)) {
-            get_assign_effect_text(x)
+            parse_statement(x)
         } else {
             out <- lapply(x, parse_expression)
             do.call(rbind, out)
@@ -92,7 +87,7 @@ parse_nodes <- function(exprs) {
     nodes[["node_id"]] <- 1:nrow(nodes)
     # both "<" and "-" can't be used in node names in dotfiles
     nodes[["effect"]] <- gsub("<-", "assign", nodes[["effect"]])
-    nodes[, c("node_id", "expr_id", "assign", "effect", "text")]
+    nodes[, c("node_id", "expr_id", "assign", "member", "effect", "text")]
 }
 
 # Pull dependencies from parsed dataframe
@@ -108,6 +103,10 @@ get_dependencies <- function(nodes) {
         out <- data.frame(
             dependency = unique(df_parsed[df_parsed[["token"]] == "SYMBOL", "text"])
         )
+        if (!is.na(df[["member"]])) {
+            # if membership is assigned, then there's a depedency on itself
+            out <- rbind(out, data.frame(dependency = df[["assign"]]))
+        }
         if (nrow(out) != 0) {
             out[["node_id"]] <- df[["node_id"]]
             out[out[["dependency"]] %in% assigned, c("node_id", "dependency")]

@@ -23,6 +23,10 @@ get_dot <- function(nodes, edges) {
         edges[["dependency"]], 
         edges[["dependency_effect"]]
     )
+    edges[["effect"]] <- ifelse(
+        # For membership assignments (there's probably a better way to do this)
+        is.na(edges[["effect"]]), edges[["assign"]], edges[["effect"]]
+    )
     edges[["dot"]] <- paste(edges[["from"]], "->", edges[["effect"]])
     attributes <- get_node_dot_attributes(nodes, edges)
     paste(

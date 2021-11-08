@@ -47,13 +47,13 @@ get_effect <- function(x) {
 get_assign_effect_text <- function(x) {
     out <- get_parse_data(x)
     if (rlang::is_call(x, "<-")) {
-        out$assign <- get_assign(x)
-        out$effect <- get_effect(x[[3]])
+        out[["assign"]] <- get_assign(x)
+        out[["effect"]] <- get_effect(x[[3]])
     } else {
-        out$assign <- NA
-        out$effect <- get_effect(x)
+        out[["assign"]] <- NA
+        out[["effect"]] <- get_effect(x)
     }
-    out[out$parent==0, c("assign", "effect", "text")]
+    out[out[["parent"]]==0, c("assign", "effect", "text")]
 }
 
 # Pull node information for a given expression (assignment or effect)
@@ -72,7 +72,8 @@ parse_expression <- function(
         } else if (!rlang::is_call(x, recurse)) {
             get_assign_effect_text(x)
         } else {
-            dplyr::bind_rows(lapply(x, parse_expression))
+            out <- lapply(x, parse_expression)
+            do.call(rbind, out)
         }
     }
 }
@@ -105,18 +106,18 @@ get_dependencies <- function(nodes) {
             df_parsed <- get_parse_data(x)
         }
         out <- data.frame(
-            dependency = unique(df_parsed[df_parsed$token == "SYMBOL", ]$text)
+            dependency = unique(df_parsed[df_parsed[["token"]] == "SYMBOL", "text"])
         )
         if (nrow(out) != 0) {
-            out$node_id <- df[["node_id"]]
-            out[out$dependency %in% assigned, c("node_id", "dependency")]
+            out[["node_id"]] <- df[["node_id"]]
+            out[out[["dependency"]] %in% assigned, c("node_id", "dependency")]
         }
     }
     assigned <- unique(nodes[["assign"]])
-    lapply(1:nrow(nodes), function(i) {
+    out <- lapply(1:nrow(nodes), function(i) {
         identify_one(nodes[i,], assigned) 
-    }) |> 
-        dplyr::bind_rows()
+    })
+    do.call(rbind, out)
 }
 
 # Pull dependency node numbers

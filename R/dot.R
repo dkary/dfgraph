@@ -1,25 +1,4 @@
-# convert nodes/edges into plots
-
-# Prepare edges dataframe for plotting
-# - x: dataframe returned by parse_edges()
-enrich_edges <- function(x) {
-    prepend_node_id <- function(x, var, id = "node_id") {
-        # ensures every node has a unique identifier for the dotfile
-        x[[var]] <- ifelse(is.na(x[[var]]), NA, paste0("n", x[[id]], "_", x[[var]]))
-        x
-    }
-    x <- prepend_node_id(x, "assign")
-    x <- prepend_node_id(x, "effect")
-    x <- prepend_node_id(x, "dependency", "node_id_dependency")
-    dependency2 <- x[, c("assign", "effect")]
-    dependency2 <- dependency2[!duplicated(dependency2), ]
-    names(dependency2) <- c("dependency", "dependency_effect")
-    out <- merge(x, dependency2, by = "dependency", all.x = TRUE)
-    out[order(out[["node_id"]]), 
-        c("node_id", "assign", "effect", 
-          "node_id_dependency", "dependency", "dependency_effect")
-    ]
-}
+# functions for defining dot specification
 
 # Identify node attributes for the dot specification
 # - also pull in nodes to display text on hover

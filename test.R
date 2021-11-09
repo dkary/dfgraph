@@ -1,7 +1,8 @@
 # test the workflow
 
-source("R/parse.R")
-source("R/plot.R")
+source("R/nodes.R")
+source("R/edges.R")
+source("R/dot.R")
 source("R/ui.R")
 
 # all-in-one version

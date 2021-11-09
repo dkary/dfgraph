@@ -1,4 +1,4 @@
-# functions to parse dependencies from an R script
+# functions for defining diagram nodes
 
 # Parse an R file path into a list of expressions
 # A placeholder. Will probably want more to it than this 
@@ -117,38 +117,4 @@ get_dependencies <- function(nodes) {
         identify_one(nodes[i,], assigned) 
     })
     do.call(rbind, out)
-}
-
-# Pull dependency node numbers
-get_dependency_nodes <- function(dependencies, nodes) {
-    # prepare all possible dependency node identifiers (for joining)
-    n <- nodes[!is.na(nodes[["assign"]]), c("node_id", "assign")]
-    names(n) <-  c("node_id_dependency", "dependency")
-    
-    # merge to get possible dependency nodes
-    d <- merge(dependencies, n, by = "dependency")
-    
-    # get closest dependency node
-    d <- d[d[["node_id_dependency"]] < d[["node_id"]], ]
-    out <- aggregate(
-        d[["node_id_dependency"]], 
-        by = list(d[["node_id"]], d[["dependency"]]), 
-        FUN = "max"
-    )
-    # tidy up
-    names(out) <- c("node_id", "dependency", "node_id_dependency")
-    out <- out[order(out[["node_id"]]),]
-    rownames(out) <- NULL
-    out
-}
-
-# Make a dataframe that defines edges (i.e., data flow arrows)
-# This is a thin wrapper for the two dependency functions
-# - nodes: dataframe returned by parse_nodes()
-parse_edges <- function(nodes) {
-    d <- get_dependencies(nodes)
-    e <- get_dependency_nodes(d, nodes)
-    n <- nodes[, c("node_id", "assign", "effect")]
-    out <- merge(n, e, by = "node_id")
-    out[, c("node_id", "assign", "effect", "node_id_dependency", "dependency")]
 }

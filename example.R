@@ -15,10 +15,11 @@ c <- mutate(a, place = "nostrils")
 output_data(x)
 
 d <- get_some(dumb, stuff, too)
-d <- mutate(d, col0 = "string")
-d$col1 <- pull_some_strings()
-d[["col2"]] <- "some other string"
-d["col3"] <- "yet another"
+d1 <- mutate(d, col0 = "string")
+d1$col1 <- pull_some_strings()
+d1[["col2"]] <- "some other string"
+d1["col3"] <- "yet another"
+d <- mutate(d1)
 
 e <- mutate(b, stuff = "dumb dumb") %>%
     filter(lordy = faith_no_more) %>%

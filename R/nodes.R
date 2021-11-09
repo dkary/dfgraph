@@ -118,3 +118,17 @@ get_dependencies <- function(nodes) {
     })
     do.call(rbind, out)
 }
+
+add_dependencies <- function(nodes, dependencies) {
+    d <- dplyr::group_by(dependencies, node_id) |>
+        dplyr::mutate(rownum = paste0("x", dplyr::row_number())) |>
+        dplyr::ungroup()
+    p <- tidyr::pivot_wider(
+        d, 
+        names_from = .data[["rownum"]], 
+        values_from = .data[["dependency"]]
+    )
+    d_combined <- tidyr::unite(p, "depends", -node_id, na.rm = TRUE, sep = ", ")
+    out <- dplyr::left_join(nodes, d_combined, by = "node_id")
+    out[, c("node_id", "expr_id", "assign", "member", "effect", "depends", "text")]
+}

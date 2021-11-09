@@ -148,3 +148,43 @@ add_node_type <- function(nodes, dependencies) {
     ))
     n[, c("node_id", "expr_id", "assign", "member", "effect", "depends", "type", "text")]
 }
+
+# Recode node_ids for "mutate" nodes
+# This will ultimately allow mutate nodes to be collapsed into parent nodes
+recode_node_ids <- function(nodes, dependencies) {
+    n <- nodes
+    n[["node_id_og"]] <- n[["node_id"]]
+    d <- merge(
+        n[, c("node_id", "assign")], dependencies, 
+        by = "node_id", all.x = TRUE
+    )
+    # Define row-level function
+    # Inefficient in R, but I'm not sure if it can be vectorized since node_id
+    # recoding needs to propagate over successive dependencies
+    new_node_id <- function(n, d, i) {
+        if (is.na(n[i, "assign"])) {
+            n[["node_id"]]
+        }
+        assign <- n[i, "assign"]
+        node_id <- n[i, "node_id"]
+        node_id_og <- n[i, "node_id_og"]
+        x <- n[-(1:i), ]
+        # Exclude assignments (of the same name) which don't depend on this one
+        reassigns <- d[
+            d[["node_id"]] > node_id_og 
+            & d[["dependency"]] != assign 
+            & d[["assign"]] == assign, ]
+        if (any(!is.na(reassigns[["node_id"]]))) {
+            first_reassign <- min(
+                reassigns[!is.na(reassigns[["node_id"]]), "node_id"], na.rm = TRUE
+            )
+            x <- x[x[["node_id"]] < first_reassign, ]
+        }
+        recode_nodes <- x[x[["depends"]] == assign & x[["type"]] == "mutate", "node_id"]
+        ifelse(n[["node_id"]] %in% recode_nodes, node_id, n[["node_id"]])
+    }
+    for (i in 1:nrow(n)) {
+        n[["node_id"]] <- new_node_id(n, d, i)
+    }
+    n[, -9]
+}

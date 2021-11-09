@@ -172,8 +172,8 @@ recode_node_ids <- function(nodes, dependencies) {
         # Exclude assignments (of the same name) which don't depend on this one
         reassigns <- d[
             d[["node_id"]] > node_id_og 
-            & d[["dependency"]] != assign 
-            & d[["assign"]] == assign, ]
+            & (is.na(d[["dependency"]]) | d[["dependency"]] != assign)
+            & (!is.na(d[["assign"]]) & d[["assign"]] == assign), ]
         if (any(!is.na(reassigns[["node_id"]]))) {
             first_reassign <- min(
                 reassigns[!is.na(reassigns[["node_id"]]), "node_id"], na.rm = TRUE
@@ -188,3 +188,4 @@ recode_node_ids <- function(nodes, dependencies) {
     }
     n[, -9]
 }
+

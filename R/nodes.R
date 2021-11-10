@@ -186,6 +186,15 @@ recode_node_ids <- function(nodes, dependencies) {
     for (i in 1:nrow(n)) {
         n[["node_id"]] <- new_node_id(n, d, i)
     }
-    n[, -9]
+    n
 }
 
+collapse_across_nodes <- function(nodes) {
+    dplyr::arrange(nodes, .data[["node_id_og"]]) |>
+        dplyr::group_by(.data[["node_id"]]) |>
+        dplyr::summarise(
+            assign = dplyr::first(.data[["assign"]]),
+            effect = dplyr::last(.data[["effect"]]),
+            text = paste(.data[["text"]], collapse = "\n")
+        )
+}

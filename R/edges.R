@@ -10,9 +10,14 @@ get_dependency_crosswalk <- function(dependencies, nodes) {
     get_dependency_id <- function(d, n, i) {
         x <- d[i, ]
         dependency <- d[i, "dependency"]
+        if (length(unique(n[["node_id"]])) == nrow(n)) {
+            last_ref_node <- x[["node_id"]] - 1
+        } else {
+            last_ref_node <- x[["node_id"]]
+        }
         ref_ids <- n[!is.na(n[["assign"]]) 
                      & n[["assign"]] == dependency 
-                     & n[["node_id"]] <= x[["node_id"]], ]
+                     & n[["node_id"]] <= last_ref_node, ]
         max(ref_ids[["node_id"]])
     }
     for (i in 1:nrow(d)) {

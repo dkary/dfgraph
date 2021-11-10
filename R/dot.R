@@ -1,29 +1,33 @@
 # functions for defining dot specification
 
-# Identify node attributes for the dot specification
-# - also pull in nodes to display text on hover
-get_node_dot_attributes <- function(nodes, edges) {
-    # NOTE: This is clunky. Probably eventually pull all this from nodes instead.
-    input <- edges[is.na(edges[["dependency_effect"]]), c("node_id_dependency", "dependency")]
-    names(input) <- c("node_id", "name")
-    input[["shape"]] <- "box"
-    input[["fillcolor"]] <- "'#cce0ff'"
-    
-    mutate <- edges[, c("node_id", "effect")]
-    names(mutate) <- c("node_id", "name")
-    mutate <- mutate[!duplicated(mutate),]
-    mutate[["shape"]] <- "circle"
-    mutate[["fillcolor"]] <- "'#f9ffe6'"
-    
-    df <- rbind(input, mutate)
-    df[["label"]] <- gsub("n[0-9]*_", "", df[["name"]])
-    df <- merge(df, nodes[, c("node_id", "text")], by = "node_id")
-    df[["text"]] <- gsub('\"', '&quot;', df[["text"]])
-    
+# Identify dot attributes for every node
+# name, shape, fillcolor, label, tooltips
+# input is square, others are circle
+get_dot_attributes <- function(nodes, edges) {
+    if (length(unique(nodes$node_id)) == nrow(nodes)) {
+        n <- nodes[, c("node_id", "assign", "effect", "text")]
+    } else {
+        n <- collapse_across_nodes(nodes)
+    }
+    n <- n[n[["effect"]] != "function", ]
+    e <- dplyr::distinct(edges, node_id) |>
+        dplyr::mutate(has_dependency = TRUE)
+    x <- dplyr::left_join(n, e, by = "node_id")
+    x[["name"]] <- paste0("n", x[["node_id"]])
+    x[["shape"]] <- ifelse(is.na(x[["has_dependency"]]), "box", "circle")
+    x[["fillcolor"]] <- ifelse(x[["shape"]] == "box", "'#cce0ff'", "'#f9ffe6'")
+    x[["label"]] <- ifelse(x[["shape"]] == "box", x[["assign"]], x[["effect"]])
+    x[["text"]] <- gsub('\"', '&quot;', x[["text"]])
     paste0(
-        df[["name"]], " [shape=", df[["shape"]], 
-        ", style=filled, fillcolor=", df[["fillcolor"]],  
-        ", label=", df[["label"]], 
-        ", tooltip='", df[["text"]], "']"
+        x[["name"]], " [shape=", x[["shape"]], 
+        ", style=filled, fillcolor=", x[["fillcolor"]],  
+        ", label=", x[["label"]], 
+        ", tooltip='", x[["text"]], "']"
     )
+}
+
+get_dot_edges <- function(edges) {
+    from <- paste0("n", edges[["node_id_dependency"]])
+    to <- paste0("n", edges[["node_id"]])
+    paste(from, "->", to)
 }

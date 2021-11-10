@@ -5,20 +5,13 @@ source("R/edges.R")
 source("R/dot.R")
 source("R/ui.R")
 
-# all-in-one version
-plot_flow("stirfry.R")
-plot_flow("example.R")
+# all-in-one versions
+plot_flow("testdat/stirfry.R", T)
+plot_flow("testdat/example.R", T)
+plot_flow("testdat/collapse.R", F)
 
 # step-by-step version
 nodes <- get_nodes("stirfry.R")
-edges <- get_edges(nodes)
-dot <- get_dot(nodes, edges)
-DiagrammeR::grViz(dot)
-
-# working on a smaller set
-# TODO: collapsing the "d" assignments in example.R
-exprs <- parse_script("example.R")[1:15]
-nodes <- parse_nodes(exprs)
 edges <- get_edges(nodes)
 dot <- get_dot(nodes, edges)
 DiagrammeR::grViz(dot)

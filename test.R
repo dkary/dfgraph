@@ -11,7 +11,7 @@ plot_flow("testdat/example.R", T)
 plot_flow("testdat/collapse.R", F)
 
 # step-by-step version
-nodes <- get_nodes("stirfry.R")
+nodes <- get_nodes("testdat/stirfry.R")
 edges <- get_edges(nodes)
-dot <- get_dot(nodes, edges)
+dot <- make_dot(nodes, edges)
 DiagrammeR::grViz(dot)

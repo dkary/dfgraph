@@ -21,21 +21,17 @@ get_edges <- function(nodes) {
 }
 
 # Convert nodes/edges into a dotfile format for dataflow graph
-get_dot <- function(nodes, edges) {
-    a <- get_dot_attributes(nodes, edges)
-    e <- get_dot_edges(edges)
-    paste(
-        "digraph {", 
-        paste(a, collapse = " "), 
-        paste(e, collapse = " "), 
-        "}"
-    )
+make_dot <- function(nodes, edges) {
+    n <- add_dot_attributes(nodes, edges)
+    a <- make_dot_nodes(n)
+    e <- make_dot_edges(edges)
+    paste("digraph {", a, e, "}", sep = "\n\n")
 }
 
 # Plot dataflow graph from R code
 plot_flow <- function(path_to_file, collapse_nodes = TRUE) {
     nodes <- get_nodes(path_to_file, collapse_nodes)
     edges <- get_edges(nodes)
-    dot <- get_dot(nodes, edges)
+    dot <- make_dot(nodes, edges)
     DiagrammeR::grViz(dot)
 }

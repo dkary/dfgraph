@@ -2,8 +2,9 @@
 
 # Identify dot attributes for every node
 # name, shape, fillcolor, label, tooltips
-# input is square, others are circle
-get_dot_attributes <- function(nodes, edges) {
+# input is box, others are ellipse
+add_dot_attributes <- function(nodes, edges) {
+    # prepare dataframe
     if (length(unique(nodes$node_id)) == nrow(nodes)) {
         n <- nodes[, c("node_id", "assign", "effect", "text")]
     } else {
@@ -13,25 +14,49 @@ get_dot_attributes <- function(nodes, edges) {
     e <- dplyr::distinct(edges, node_id) |>
         dplyr::mutate(has_dependency = TRUE)
     x <- dplyr::left_join(n, e, by = "node_id")
+    
+    # define attributes
+    x[["shape"]] <- ifelse(is.na(x[["has_dependency"]]), "box", "ellipse")
     x[["name"]] <- paste0("n", x[["node_id"]])
-    x[["shape"]] <- ifelse(is.na(x[["has_dependency"]]), "box", "circle")
-    x[["fillcolor"]] <- ifelse(x[["shape"]] == "box", "'#cce0ff'", "'#f9ffe6'")
     x[["label"]] <- ifelse(
         x[["shape"]] == "box" | is.na(x[["effect"]]), 
         x[["assign"]], x[["effect"]]
     )
     x[["text"]] <- gsub('\"', '&quot;', x[["text"]])
-    paste0(
-        x[["name"]], " [shape=", x[["shape"]], 
-        ", style=filled, fillcolor=", x[["fillcolor"]],  
-        ", label=", x[["label"]], 
-        ", tooltip='", x[["text"]], "']"
+    x
+}
+
+# Make dot code for nodes
+make_dot_nodes <- function(nodes) {
+    x <- split(nodes, nodes[["shape"]]) # splitting by groups for dot subgraphs
+    assemble_attributes <- function(x) {
+        paste0(
+            x[["name"]], 
+            " [label=", x[["label"]], 
+            ", tooltip='", x[["text"]], "']", 
+            collapse = "\n"
+        )
+    }
+    assemble_subgraph <- function(x, shape, fillcolor) {
+        paste0(
+            "subgraph ", shape, " {", "\n",
+            "node [shape=", shape, 
+            ", style=filled, fillcolor='", fillcolor, "']", "\n", 
+            assemble_attributes(x[[shape]]), "\n", 
+            "}"
+        )
+    }
+    paste(
+        assemble_subgraph(x, "box", "#cce0ff"),
+        assemble_subgraph(x, "ellipse", "#f9ffe6"),
+        sep = "\n\n"
     )
 }
 
-# Identify dot edge to/from
-get_dot_edges <- function(edges) {
+# Make dot code for edges
+make_dot_edges <- function(edges) {
     from <- paste0("n", edges[["node_id_dependency"]])
     to <- paste0("n", edges[["node_id"]])
-    paste(from, "->", to)
+    e <- paste(from, "->", to)
+    paste(e, collapse = " ")
 }

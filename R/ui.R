@@ -22,10 +22,10 @@ get_edges <- function(nodes) {
 
 # Convert nodes/edges into a dotfile format for dataflow graph
 make_dot <- function(nodes, edges) {
-    n <- add_dot_attributes(nodes, edges)
-    a <- make_dot_nodes(n)
+    nodes <- add_dot_attributes(nodes, edges)
+    n <- make_dot_nodes(nodes)
     e <- make_dot_edges(edges)
-    paste("digraph {", a, e, "}", sep = "\n\n")
+    paste("digraph {", n, e, "}", sep = "\n\n")
 }
 
 # Plot dataflow graph from R code

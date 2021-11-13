@@ -1,6 +1,63 @@
 # functions for defining diagram edges
 
+# TODO:
+# [ ] probably use this lower-level function elsewhere as well
+# Get dependencies (vector) for a single R statement
+# The statement will be represented by an expression
+# To be called from get_func_depends()
+parse_statement_depends <- function(x){
+    # for an assignment, go one level done (I think)
+    if (rlang::is_call(x, "<-")) {
+        df <- get_parse_data(x[[3]])
+    } else {
+        df <- get_parse_data(x)
+    }
+    df[df[["token"]] == "SYMBOL", "text"]
+}
+
+# TODO: 
+# [ ] should return function dependency (not just assignment)
+# Get global dependencies (vector) of a function represented by an expression
+get_func_depends <- function(expr) {
+    # 1. identify named arguments
+    # This will initialize locally-scoped function variables
+    f <- expr[[3]]
+    f_formals <- f[[2]] # function formals get stored in a pairlist
+    locals <- names(f_formals) # function args
+    
+    # 2. identify any globals called by default argument values
+    globals <- c() 
+    for (i in seq_along(f_formals)) {
+        if (is.name(f_formals[[i]]) & f_formals[[i]] != "") {
+            globals <- c(globals, rlang::as_string(f_formals[[i]]))
+        }
+    }
+    
+    # 3. parse nodes from the function expression
+    n <- lapply(f, parse_expression)
+    n <- do.call(rbind, n)
+    
+    # 4. Trace locals/globals over function statements
+    for (i in 1:nrow(n)) {
+        x <- n[i, "text"] |> rlang::parse_expr()
+        locals <- c(locals, n[i, "assign"])
+        if (rlang::is_call(x, "<-")) {
+            if (rlang::is_call(x[[3]], "function")) {
+                globals <- c(globals, get_func_depends(x))
+            } else {
+                depends <- parse_statement_depends(x)
+                globals <- c(globals, setdiff(depends, locals))
+            }
+        } else {
+            depends <- parse_statement_depends(x)
+            globals <- c(globals, setdiff(depends, locals))
+        }
+    }
+    unique(globals)
+}
+
 # Pull dependencies from parsed dataframe
+# Dependencies are identified by the "SYMBOL" token from base::getParseData()
 # - nodes: dataframe returned by parse_nodes()
 get_dependencies <- function(nodes) {
     identify_one <- function(df, assigned) {

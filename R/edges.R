@@ -1,24 +1,19 @@
 # functions for defining diagram edges
 
-# TODO:
-# [ ] probably use this lower-level function elsewhere as well
-# Get dependencies (vector) for a single R statement
+# Parse dependencies (vector) for a single R statement
 # The statement will be represented by an expression
-# To be called from get_func_depends()
 parse_statement_depends <- function(x){
-    # for an assignment, go one level done (I think)
     if (rlang::is_call(x, "<-")) {
         df <- get_parse_data(x[[3]])
     } else {
         df <- get_parse_data(x)
     }
-    df[df[["token"]] == "SYMBOL", "text"]
+    out <- df[df[["token"]] %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL"), "text"]
+    unique(out)
 }
 
-# TODO: 
-# [ ] should return function dependency (not just assignment)
-# Get global dependencies (vector) of a function represented by an expression
-get_func_depends <- function(expr) {
+# Parse global dependencies (vector) of a function definition (expression)
+parse_function_depends <- function(expr) {
     # 1. identify named arguments
     # This will initialize locally-scoped function variables
     f <- expr[[3]]
@@ -37,13 +32,17 @@ get_func_depends <- function(expr) {
     n <- lapply(f, parse_expression)
     n <- do.call(rbind, n)
     
+    if (is.null(n)) {
+        return(unique(globals))
+    }
+    
     # 4. Trace locals/globals over function statements
     for (i in 1:nrow(n)) {
         x <- n[i, "text"] |> rlang::parse_expr()
         locals <- c(locals, n[i, "assign"])
         if (rlang::is_call(x, "<-")) {
             if (rlang::is_call(x[[3]], "function")) {
-                globals <- c(globals, get_func_depends(x))
+                globals <- c(globals, parse_function_depends(x))
             } else {
                 depends <- parse_statement_depends(x)
                 globals <- c(globals, setdiff(depends, locals))
@@ -56,32 +55,36 @@ get_func_depends <- function(expr) {
     unique(globals)
 }
 
+# Get dependencies for a single node
+# - node: one row from a row dataframe
+get_statement_depends <- function(node) {
+    x <- rlang::parse_expr(node[["text"]])
+    # TODO: repeated code from above, will want to streamline
+    if (rlang::is_call(x, "<-")) {
+        if (rlang::is_call(x[[3]], "function")) {
+            d <- parse_function_depends(x)
+        } else {
+            d <- parse_statement_depends(x)
+        }
+    } else {
+        d <- parse_statement_depends(x)
+    }
+    if (!is.na(node[["member"]])) {
+        # if membership is assigned, then there's also a dependency on itself
+        d <- c(d, node[["member"]])
+    }
+    if (length(d) > 0) {
+        data.frame(node_id = node[["node_id"]], dependency = d)
+    }
+}
+
 # Pull dependencies from parsed dataframe
-# Dependencies are identified by the "SYMBOL" token from base::getParseData()
 # - nodes: dataframe returned by parse_nodes()
 get_dependencies <- function(nodes) {
-    identify_one <- function(df, assigned) {
-        x <- rlang::parse_expr(df[["text"]])
-        if (!is.na(df[["assign"]])) {
-            df_parsed <- get_parse_data(x[[3]])
-        } else {
-            df_parsed <- get_parse_data(x)
-        }
-        out <- data.frame(
-            dependency = unique(df_parsed[df_parsed[["token"]] == "SYMBOL", "text"])
-        )
-        if (!is.na(df[["member"]])) {
-            # if membership is assigned, then there's a depedency on itself
-            out <- rbind(out, data.frame(dependency = df[["assign"]]))
-        }
-        if (nrow(out) != 0) {
-            out[["node_id"]] <- df[["node_id"]]
-            out[out[["dependency"]] %in% assigned, c("node_id", "dependency")]
-        }
-    }
     assigned <- unique(nodes[["assign"]])
     out <- lapply(1:nrow(nodes), function(i) {
-        identify_one(nodes[i,], assigned) 
+        x <- get_statement_depends(nodes[i,])
+        x[x[["dependency"]] %in% assigned, ]
     })
     do.call(rbind, out)
 }

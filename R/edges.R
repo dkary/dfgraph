@@ -2,73 +2,50 @@
 
 # Parse dependencies (vector) for a single R statement
 # The statement will be represented by an expression
-parse_statement_depends <- function(x){
-    if (rlang::is_call(x, "<-")) {
-        df <- get_parse_data(x[[3]])
-    } else {
+parse_statement_depends <- function(expr) {
+    parse_one <- function(x) {
         df <- get_parse_data(x)
+        unique(df[df[["token"]] %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL"), "text"])
     }
-    out <- df[df[["token"]] %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL"), "text"]
-    unique(out)
-}
-
-# Parse global dependencies (vector) of a function definition (expression)
-parse_function_depends <- function(expr) {
-    # 1. identify named arguments
-    # This will initialize locally-scoped function variables
-    f <- expr[[3]]
-    f_formals <- f[[2]] # function formals get stored in a pairlist
-    locals <- names(f_formals) # function args
-    
-    # 2. identify any globals called by default argument values
-    globals <- c() 
-    for (i in seq_along(f_formals)) {
-        if (is.name(f_formals[[i]]) & f_formals[[i]] != "") {
-            globals <- c(globals, rlang::as_string(f_formals[[i]]))
-        }
+    if (rlang::is_call(expr, "<-")) {
+        expr <- expr[[3]]
     }
-    
-    # 3. parse nodes from the function expression
-    n <- lapply(f, parse_expression)
-    n <- do.call(rbind, n)
-    
-    if (is.null(n)) {
-        return(unique(globals))
-    }
-    
-    # 4. Trace locals/globals over function statements
-    for (i in 1:nrow(n)) {
-        x <- n[i, "text"] |> rlang::parse_expr()
-        locals <- c(locals, n[i, "assign"])
-        if (rlang::is_call(x, "<-")) {
-            if (rlang::is_call(x[[3]], "function")) {
-                globals <- c(globals, parse_function_depends(x))
-            } else {
-                depends <- parse_statement_depends(x)
-                globals <- c(globals, setdiff(depends, locals))
+    if (!rlang::is_call(expr, "function")) {
+        parse_one(expr)
+    } else {
+        # An assigned function needs global dependencies pulled (recursively)
+        # 1. identify named arguments
+        f_formals <- expr[[2]] # function formals get stored in a pairlist
+        locals <- names(f_formals) # function args
+        # 2. identify any globals called by default argument values
+        globals <- c() 
+        for (i in seq_along(f_formals)) {
+            if (is.name(f_formals[[i]]) & f_formals[[i]] != "") {
+                globals <- c(globals, rlang::as_string(f_formals[[i]]))
             }
-        } else {
+        }
+        # 3. parse nodes from the function expression
+        n <- lapply(expr, parse_expression)
+        n <- do.call(rbind, n)
+        if (is.null(n)) {
+            return(unique(globals))
+        }
+        # 4. Trace locals/globals over function statements
+        for (i in 1:nrow(n)) {
+            x <- n[i, "text"] |> rlang::parse_expr()
+            locals <- c(locals, n[i, "assign"])
             depends <- parse_statement_depends(x)
             globals <- c(globals, setdiff(depends, locals))
         }
+        unique(globals)
     }
-    unique(globals)
 }
 
 # Get dependencies for a single node
 # - node: one row from a row dataframe
-get_statement_depends <- function(node) {
+get_node_depends <- function(node) {
     x <- rlang::parse_expr(node[["text"]])
-    # TODO: repeated code from above, will want to streamline
-    if (rlang::is_call(x, "<-")) {
-        if (rlang::is_call(x[[3]], "function")) {
-            d <- parse_function_depends(x)
-        } else {
-            d <- parse_statement_depends(x)
-        }
-    } else {
-        d <- parse_statement_depends(x)
-    }
+    d <- parse_statement_depends(x)
     if (!is.na(node[["member"]])) {
         # if membership is assigned, then there's also a dependency on itself
         d <- c(d, node[["member"]])
@@ -83,7 +60,7 @@ get_statement_depends <- function(node) {
 get_dependencies <- function(nodes) {
     assigned <- unique(nodes[["assign"]])
     out <- lapply(1:nrow(nodes), function(i) {
-        x <- get_statement_depends(nodes[i,])
+        x <- get_node_depends(nodes[i,])
         x[x[["dependency"]] %in% assigned, ]
     })
     do.call(rbind, out)

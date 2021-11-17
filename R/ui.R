@@ -1,23 +1,20 @@
 # user-facing functions
 
-# Extract nodes from R code into a dataframe
-get_nodes <- function(path_to_file, collapse_nodes = TRUE) {
+# Extract nodes and edges from R code into a list of 2 dataframes
+get_flow_data <- function(path_to_file, collapse_nodes = TRUE) {
     exprs <- parse_script(path_to_file)
-    nodes <- parse_nodes(exprs)
-    # TODO: silly that this gets called twice, clean it up
-    dependencies <- get_dependencies(nodes)
-    nodes <- add_node_type(nodes, dependencies)
+    n <- parse_nodes(exprs)
+    e <- get_dependencies(n)
+    n <- add_node_type(n, e)
+    f <- list("nodes" = n, "edges" = e)
     if (collapse_nodes) {
-        nodes <- recode_node_ids(nodes, dependencies)
+        f <- recode_nodes(f[["nodes"]], f[["edges"]], type = "mutate")
     }
-    rownames(nodes) <- NULL
-    nodes
-}
-
-# Get edges from nodes
-get_edges <- function(nodes) {
-    # TODO: maybe enrich edges here
-    get_dependencies(nodes)
+    # propagate assigned function dependencies
+    # (i.e., remove assigned functions from dependency chain)
+    f <- recode_nodes(f[["nodes"]], f[["edges"]], type = "function")
+    f[["edges"]] <- drop_function_edges(f[["edges"]], f[["nodes"]])
+    f
 }
 
 # Convert nodes/edges into a dotfile format for dataflow graph
@@ -30,8 +27,7 @@ make_dot <- function(nodes, edges) {
 
 # Plot dataflow graph from R code
 plot_flow <- function(path_to_file, collapse_nodes = TRUE) {
-    nodes <- get_nodes(path_to_file, collapse_nodes)
-    edges <- get_edges(nodes)
-    dot <- make_dot(nodes, edges)
+    f <- get_flow_data(path_to_file, collapse_nodes)
+    dot <- make_dot(f[["nodes"]], f[["edges"]])
     DiagrammeR::grViz(dot)
 }

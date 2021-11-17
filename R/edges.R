@@ -48,7 +48,7 @@ get_node_depends <- function(node) {
     d <- parse_statement_depends(x)
     if (!is.na(node[["member"]])) {
         # if membership is assigned, then there's also a dependency on itself
-        d <- c(d, node[["member"]])
+        d <- c(d, node[["assign"]])
     }
     if (length(d) > 0) {
         data.frame(node_id = node[["node_id"]], dependency = d)
@@ -58,38 +58,26 @@ get_node_depends <- function(node) {
 # Pull dependencies from parsed dataframe
 # - nodes: dataframe returned by parse_nodes()
 get_dependencies <- function(nodes) {
-    assigned <- unique(nodes[["assign"]])
-    out <- lapply(1:nrow(nodes), function(i) {
-        x <- get_node_depends(nodes[i,])
-        x[x[["dependency"]] %in% assigned, ]
-    })
-    do.call(rbind, out)
-}
-
-# Get a relation table between node IDs and dependency node IDs
-# I think this is inherently unvectorizable because it's position-based (due
-#  to the possiblity of reassignment)
-get_dependency_crosswalk <- function(dependencies, nodes) {
-    n <- nodes
-    d <- dependencies
-    d[["node_id_dependency"]] <- NA # initialize
-    get_dependency_id <- function(d, n, i) {
-        x <- d[i, ]
-        dependency <- d[i, "dependency"]
-        if (length(unique(n[["node_id"]])) == nrow(n)) {
-            last_ref_node <- x[["node_id"]] - 1
-        } else {
-            last_ref_node <- x[["node_id"]]
+    depends <- data.frame()
+    for (i in 1:nrow(nodes)) {
+        d <- get_node_depends(nodes[i, ])
+        if (is.null(d)) {
+            next
         }
-        ref_ids <- n[!is.na(n[["assign"]]) 
-                     & n[["assign"]] == dependency 
-                     & n[["node_id"]] <= last_ref_node, ]
-        max(ref_ids[["node_id"]])
+        for (j in 1:nrow(d)) {
+            n <- nodes[
+                !is.na(nodes[["assign"]])
+                & nodes[["node_id"]] < i 
+                & nodes[["assign"]] == d[j, "dependency"], ]
+            if (nrow(n) > 0) {
+                d[j, "node_id_dependency"] <- max(n[["node_id"]])
+            } else {
+                d[j, "node_id_dependency"] <- NA
+            }
+        }
+        depends <- rbind(depends, d)
     }
-    for (i in 1:nrow(d)) {
-        d[["node_id_dependency"]][i] <- get_dependency_id(d, n, i)
-    }
-    dplyr::select(d, node_id, node_id_dependency) |> 
-        dplyr::distinct() |> 
-        dplyr::filter(node_id != node_id_dependency)
+    depends <- depends[!is.na(depends[["node_id_dependency"]]), ]
+    rownames(depends) <- NULL
+    depends[, c("node_id", "node_id_dependency")]
 }

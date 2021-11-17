@@ -90,21 +90,6 @@ parse_nodes <- function(exprs) {
     nodes[, c("node_id", "expr_id", "assign", "member", "effect", "text")]
 }
 
-# Add a depends column to nodes which specifies the nodes' dependencies
-add_dependencies <- function(nodes, dependencies) {
-    d <- dplyr::group_by(dependencies, node_id) |>
-        dplyr::mutate(rownum = paste0("x", dplyr::row_number())) |>
-        dplyr::ungroup()
-    p <- tidyr::pivot_wider(
-        d, 
-        names_from = .data[["rownum"]], 
-        values_from = .data[["dependency"]]
-    )
-    d_combined <- tidyr::unite(p, "depends", -node_id, na.rm = TRUE, sep = ", ")
-    out <- dplyr::left_join(nodes, d_combined, by = "node_id")
-    out[, c("node_id", "expr_id", "assign", "member", "effect", "depends", "text")]
-}
-
 # Add a type column to nodes
 # - input: a raw input assignment (which has no dependencies)
 # - mutate: an assignment with a single dependency (i.e., self-dependency)
@@ -117,7 +102,7 @@ add_node_type <- function(nodes, dependencies) {
         ifelse(is.na(n[["n"]]), "input", 
             ifelse(n[["n"]] == 1, "mutate", "combine")
     ))
-    n[, c("node_id", "expr_id", "assign", "member", "effect", "depends", "type", "text")]
+    n[, c("node_id", "expr_id", "assign", "member", "effect", "type", "text")]
 }
 
 # Recode node_ids for "mutate" nodes

@@ -91,6 +91,7 @@ parse_nodes <- function(exprs) {
 }
 
 # Add a type column to nodes
+# - function: an assigned function
 # - input: a raw input assignment (which has no dependencies)
 # - mutate: an assignment with a single dependency (i.e., self-dependency)
 # - combine: an assignment with multiple dependencies
@@ -98,51 +99,24 @@ parse_nodes <- function(exprs) {
 add_node_type <- function(nodes, dependencies) {
     d_count <- dplyr::count(dependencies, .data[["node_id"]])
     n <- dplyr::left_join(nodes, d_count, by = "node_id")
+    is_func <- function(text) {
+        expr <- rlang::parse_expr(text)
+        if (rlang::is_call(expr, "<-")) {
+            expr <- expr[[3]]
+        }
+        if (rlang::is_call(expr, "function")) {
+            TRUE
+        } else {
+            FALSE
+        }
+    }
+    n[["is_func"]] <- lapply(n$text, is_func) |> unlist()
     n[["type"]] <- ifelse(is.na(n[["assign"]]), "effect",
-        ifelse(is.na(n[["n"]]), "input", 
-            ifelse(n[["n"]] == 1, "mutate", "combine")
-    ))
+        ifelse(n[["is_func"]], "function",                   
+            ifelse(is.na(n[["n"]]), "input", 
+                ifelse(n[["n"]] == 1, "mutate", "combine")
+    )))
     n[, c("node_id", "expr_id", "assign", "member", "effect", "type", "text")]
-}
-
-# Recode node_ids for "mutate" nodes
-# This will ultimately allow mutate nodes to be collapsed into parent nodes
-recode_node_ids <- function(nodes, dependencies) {
-    n <- nodes
-    n[["node_id_og"]] <- n[["node_id"]]
-    d <- merge(
-        n[, c("node_id", "assign")], dependencies, 
-        by = "node_id", all.x = TRUE
-    )
-    # Define row-level function
-    # Inefficient in R, but I'm not sure if it can be vectorized since node_id
-    # recoding needs to propagate over successive dependencies
-    new_node_id <- function(n, d, i) {
-        if (is.na(n[i, "assign"])) {
-            n[["node_id"]]
-        }
-        assign <- n[i, "assign"]
-        node_id <- n[i, "node_id"]
-        node_id_og <- n[i, "node_id_og"]
-        x <- n[-(1:i), ]
-        # Exclude assignments (of the same name) which don't depend on this one
-        reassigns <- d[
-            d[["node_id"]] > node_id_og 
-            & (is.na(d[["dependency"]]) | d[["dependency"]] != assign)
-            & (!is.na(d[["assign"]]) & d[["assign"]] == assign), ]
-        if (any(!is.na(reassigns[["node_id"]]))) {
-            first_reassign <- min(
-                reassigns[!is.na(reassigns[["node_id"]]), "node_id"], na.rm = TRUE
-            )
-            x <- x[x[["node_id"]] < first_reassign, ]
-        }
-        recode_nodes <- x[x[["depends"]] == assign & x[["type"]] == "mutate", "node_id"]
-        ifelse(n[["node_id"]] %in% recode_nodes, node_id, n[["node_id"]])
-    }
-    for (i in 1:nrow(n)) {
-        n[["node_id"]] <- new_node_id(n, d, i)
-    }
-    n
 }
 
 # Collapse to one row per node_id in the nodes dataframe

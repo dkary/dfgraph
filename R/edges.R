@@ -81,3 +81,34 @@ get_dependencies <- function(nodes) {
     rownames(depends) <- NULL
     depends[, c("node_id", "node_id_dependency")]
 }
+
+# TODO: propagate dependencies of function global dependencies
+# Recode node_ids for "mutate" nodes
+# This will ultimately allow mutate nodes to be collapsed into parent nodes
+recode_nodes <- function(nodes, edges, type = "mutate") {
+    e <- merge(edges, nodes[nodes[["type"]] == type, "node_id", drop = FALSE], 
+          by = "node_id")
+    for (i in 1:nrow(e)) {
+        e[i, "new_id"] <- e[i, "node_id_dependency"]
+        e[["node_id_dependency"]] <- ifelse(
+            e[["node_id_dependency"]] == e[i, "node_id"],
+            e[i, "new_id"],
+            e[["node_id_dependency"]]
+        )
+    }
+    e <- e[c("node_id", "new_id")]
+    recode_id <- function(df, e, col) {
+        names(e)[1] <- col
+        out <- merge(df, e, by = col, all.x = TRUE)
+        out[[col]] <- ifelse(!is.na(out[["new_id"]]), out[["new_id"]], out[[col]])
+        out[names(df)]
+    }
+    edges <- recode_id(edges, e, "node_id_dependency")
+    edges <- recode_id(edges, e, "node_id") |> 
+        dplyr::filter(node_id != node_id_dependency) |>
+        dplyr::distinct() |>
+        dplyr::arrange(node_id, node_id_dependency)
+    nodes[["node_id_og"]] <- nodes[["node_id"]]
+    nodes <- recode_id(nodes, e, "node_id")
+    list("nodes" = nodes, "edges" = edges)
+}

@@ -28,7 +28,7 @@ get_flow_data <- function(path_to_file, collapse_nodes = TRUE) {
 #'
 #' @return Returns a string in a dotfile-compatible format
 #' @export
-make_dot <- function(flow_data, collapse_nodes = TRUE) {
+make_dot <- function(flow_data, collapse_nodes = TRUE, exclude_text = FALSE) {
     f <- flow_data
     f[["edges"]] <- drop_function_edges(f[["edges"]], f[["nodes"]])
     if (collapse_nodes) {
@@ -38,7 +38,7 @@ make_dot <- function(flow_data, collapse_nodes = TRUE) {
         f[["nodes"]] <- f[["nodes"]][, c("node_id", "assign", "effect", "text")]
     }
     n <- add_dot_attributes(f[["nodes"]], f[["edges"]])
-    n <- make_dot_nodes(n)
+    n <- make_dot_nodes(n, exclude_text)
     e <- make_dot_edges(f[["edges"]])
     paste("digraph {", n, e, "}", sep = "\n\n")
 }
@@ -49,8 +49,8 @@ make_dot <- function(flow_data, collapse_nodes = TRUE) {
 #'
 #' @return Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}
 #' @export
-plot_flow <- function(path_to_file, collapse_nodes = TRUE) {
+plot_flow <- function(path_to_file, collapse_nodes = TRUE, exclude_text = FALSE) {
     f <- get_flow_data(path_to_file, collapse_nodes)
-    dot <- make_dot(f, collapse_nodes)
+    dot <- make_dot(f, collapse_nodes, exclude_text)
     DiagrammeR::grViz(dot)
 }

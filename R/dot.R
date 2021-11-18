@@ -1,6 +1,6 @@
 # functions for defining dot specification
 
-add_dot_attributes <- function(nodes, edges, collapse_nodes) {
+add_dot_attributes <- function(nodes, edges) {
     # prepare dataframe
     n <- nodes
     n <- n[is.na(n[["effect"]]) | n[["effect"]] != "function", ]
@@ -21,15 +21,17 @@ add_dot_attributes <- function(nodes, edges, collapse_nodes) {
 }
 
 # Make dot code for nodes
-make_dot_nodes <- function(nodes) {
+make_dot_nodes <- function(nodes, exclude_text = FALSE) {
     x <- split(nodes, nodes[["shape"]]) # splitting by groups for dot subgraphs
     assemble_attributes <- function(x) {
-        paste0(
-            x[["name"]], 
-            " [label=", x[["label"]], 
-            ", tooltip='", x[["text"]], "']", 
-            collapse = "\n"
-        )
+        if (exclude_text) {
+            paste0(x$name, " [label='", x$label, "']", collapse = "\n")
+        } else {
+            paste0(
+                x$name, " [label='", x$label, "', tooltip='", x$text, "']", 
+                collapse = "\n"
+            )
+        }
     }
     assemble_subgraph <- function(x, shape, fillcolor) {
         paste0(

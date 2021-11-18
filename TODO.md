@@ -1,7 +1,9 @@
 
 # TODO 
 
+- [x] propagate function global dependencies
 - [ ] set up R package structure (and roxygen docs)
+- [ ] proof of concept
 - [ ] vignette and/or links to blog posts
 - [ ] testing
 
@@ -12,6 +14,7 @@
     + tibble
 - these are probably worthwhile
     + rlang
+    + tools, knitr (for reading Rmd)
     + DiagrammeR
 
 ## Data Prep
@@ -22,12 +25,12 @@
 - [x] work on incorporating with ggdag package
     + should edges look more like the output of ggdag::tidy_dagitty?
     + probably better: produce a dot langauge representation of nodes/edges, which you can then graph using ggdag (or similar)
-- [ ] collapse assignments that only depend on themselves to previous nodes
-- [ ] get sequential integers for repeated occurrences of assignment nodes
+- [x] collapse assignments that only depend on themselves to previous nodes
+- [x] get sequential integers for repeated occurrences of assignment nodes
     + getting rid of the current node_id workaround
 - [x] ignore function assignment
 - [ ] maybe treat apply (and purrr functions) like for loops
-- [ ] catch assignment with "="
+- [x] catch assignment with "="
 - [x] target and dependency numbering, so we can:
     + have target (objects) with the same name occur as separate nodes
     + have the correct node referenced in dependencies (i.e., the most recent with the matching name)
@@ -43,7 +46,7 @@
 - [ ] (maybe) wrapper func to save to dotfile for editing and replotting
 - [x] correctly work with escaped quotes in tooltips
 - [ ] increase tooltip size (and maybe responsiveness)
-- [ ] better implementation of numbers stripped from node names for labelling (e.g., if we want to show attributes, we would want the exact name assigned, even if it has numbers)
+- [x] better implementation of numbers stripped from node names for labelling (e.g., if we want to show attributes, we would want the exact name assigned, even if it has numbers)
 - [ ] correctly represent `|>` in tooltips (instead of using the parsed representation which converts to nested functions)
 
 ## Lower Priority

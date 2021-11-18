@@ -7,7 +7,7 @@ parse_statement_depends <- function(expr) {
         df <- get_parse_data(x)
         unique(df[df[["token"]] %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL"), "text"])
     }
-    if (rlang::is_call(expr, "<-")) {
+    if (rlang::is_call(expr, c("<-", "="))) {
         expr <- expr[[3]]
     }
     if (!rlang::is_call(expr, "function")) {

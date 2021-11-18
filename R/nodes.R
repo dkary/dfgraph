@@ -37,7 +37,7 @@ parse_statement <- function(x) {
     out <- get_parse_data(x)
     out[["assign"]] <- NA
     out[["member"]] <- NA
-    if (rlang::is_call(x, "<-")) {
+    if (rlang::is_call(x, c("<-", "="))) {
         if (rlang::is_call(x[[2]], c("$", "[", "[["))) {
             out[["assign"]] <- rlang::as_string(x[[2]][[2]])
             out[["member"]] <- rlang::as_string(x[[2]][[3]])
@@ -85,8 +85,9 @@ parse_nodes <- function(exprs) {
     })
     nodes <- do.call(rbind, nodes)
     nodes[["node_id"]] <- 1:nrow(nodes)
-    # both "<" and "-" can't be used in node names in dotfiles
+    # some symbols can't be used in dotfile label attributes
     nodes[["effect"]] <- gsub("<-", "assign", nodes[["effect"]])
+    nodes[["effect"]] <- gsub("=", "assign", nodes[["effect"]])
     nodes[, c("node_id", "expr_id", "assign", "member", "effect", "text")]
 }
 
@@ -100,7 +101,7 @@ add_node_type <- function(nodes, dependencies) {
     # assigned functions will be their own category
     is_assigned_func <- function(text) {
         expr <- rlang::parse_expr(text)
-        if (rlang::is_call(expr, "<-")) {
+        if (rlang::is_call(expr, c("<-", "="))) {
             expr <- expr[[3]]
         }
         if (rlang::is_call(expr, "function")) {

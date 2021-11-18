@@ -1,7 +1,33 @@
-# make tasty food with R code
+---
+title: "Stirfry"
+output: html_document
+---
 
-source("testdat/func.R")
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
+## Get Functions
+
+I think any sources need to be from the directory, bla
+
+```{r}
+source("func2.R")
+```
+
+```{r}
+add <- function(vessel, item) { }
+cook <- function(vessel, min) { }
+heat <- function(vessel, temp, min) { }
+fry <- function(vessel, temp, min) { }
+chop <- function(...) { }
+mix <- function(vessel) { }
+serve <- function(vessel) { }
+```
+
+## Make Stirfry
+
+```{r}
 # 1. Start the Rice
 water = get("water", "faucet")
 rice <- get("rice", "pantry")
@@ -47,3 +73,4 @@ bowls |>
     add(stirfry) |>
     add(chopsticks) |>
     serve()
+```

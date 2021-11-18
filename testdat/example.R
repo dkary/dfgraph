@@ -61,4 +61,5 @@ output_data(filter(c, z = "stuffy"))
 e$stuff <- "other_stuff"
 x <- filter(e, condition == "okay")
 y <- 2
+z = x = y
 z <- x <- y

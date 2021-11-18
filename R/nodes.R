@@ -1,7 +1,12 @@
 # functions for defining diagram nodes
 
-# Parse an R file path into a list of expressions
+# Parse an R (or Rmd) file into a list of expressions
 parse_script <- function(path_to_file) {
+    if (tolower(tools::file_ext(path_to_file)) == "rmd") {
+        path_to_file <- knitr::purl(
+            path_to_file, documentation = 0, output = tempfile(), quiet = TRUE
+        )
+    }
     exprs <- rlang::parse_exprs(file(path_to_file))
     # recursively pull in any sourced files
     # NOTE: a couple limitations currently:

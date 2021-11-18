@@ -23,7 +23,7 @@ parse_script <- function(path_to_file) {
 # Get parsed data detail from expression
 # - x: one element of list of expressions returned by parse_script()
 get_parse_data <- function(x_eval, includeText = TRUE) {
-    getParseData(
+    utils::getParseData(
         # a hack to get a dataframe with just one expression (seems inefficient)
         parse(text = deparse(x_eval)), 
         includeText = includeText
@@ -35,9 +35,9 @@ get_parse_data <- function(x_eval, includeText = TRUE) {
 # - x: one element of list of expressions returned by parse_script()
 get_effect <- function(x) {
     if (rlang::is_call(x, c("%>%", "|>"))) {
-        rlang::as_string(x[[3]][[1]])
+        as.character(x[[3]][[1]])[1]
     } else if (is.call(x)) {
-        rlang::as_string(x[[1]])
+        as.character(x[[1]])[1]
     } else {
         NA
     }
@@ -51,10 +51,10 @@ parse_statement <- function(x) {
     out[["member"]] <- NA
     if (rlang::is_call(x, c("<-", "="))) {
         if (rlang::is_call(x[[2]], c("$", "[", "[["))) {
-            out[["assign"]] <- rlang::as_string(x[[2]][[2]])
-            out[["member"]] <- rlang::as_string(x[[2]][[3]])
+            out[["assign"]] <- as.character(x[[2]][[2]])[1]
+            out[["member"]] <- as.character(x[[2]][[3]])[1]
         } else {
-            out[["assign"]] <- rlang::as_string(x[[2]])
+            out[["assign"]] <- as.character(x[[2]])[1]
         }
         out[["effect"]] <- get_effect(x[[3]])
     } else {

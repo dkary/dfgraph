@@ -19,6 +19,7 @@
 
 ## Data Prep
 
+- [ ] dealing with script options such as `knitr::opts_chunk$set()`. Probably want to exclude these
 - [x] catch assignment like df$col
 - [x] correct ordering with conditionals
     + whereas now all assignment come before all effects

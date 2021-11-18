@@ -40,8 +40,10 @@
 - [x] `edges_to_dot()`: converting parsed/dependencies to a useful format (e.g., dotfile)
 - [x] aliases (the target name) instead of the current name+ID displayed
 - [x] get a nice default appearance, potentially with a wrapper function
-- [ ] (if time) incorporate interactivity in output
-- [ ] try it on some real life code from SA Github
+- [ ] exclude_nodes (vector of nodes ids) that will be treated like assigned functions (i.e., their dependencies will be propagated, but they won't be displayed)
+    + use case: a parameter which is used in many nodes, clutters the display without being terribly informative
+- [ ] (maybe) a display_assignment = TRUE option that will show assigned variable names (instead of function name) for non-input nodes
+- [ ] exclude_text = TRUE option (removing corresponding code from the tooltip) to make for much more compact dot files
 - [ ] (maybe) convert nesting to pipes for display (or use the srcref attribute from parse())
 - [ ] (maybe) wrapper func to save to dotfile for editing and replotting
 - [x] correctly work with escaped quotes in tooltips
@@ -53,3 +55,8 @@
 
 - [ ] consider capturing control flow and nesting in parsed output (which could seemingly be useful to visualize)
     + Interesting that the native pipe is automatically converted to nested calls in the expression. Makes sense, but won't be nice for viewing code if that feature is included
+    
+- [ ] Plot interactivity for collapsing/expanding nodes
+    + watershed metaphor: every edge could have a +/-
+    + a "-" would collapse everything above the edge to one node
+    + a "+" would expand a collapsed node to some degree

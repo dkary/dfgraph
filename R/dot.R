@@ -1,13 +1,10 @@
 # functions for defining dot specification
 
-# Identify dot attributes for every node
-# name, shape, fillcolor, label, tooltips
-# input is box, others are ellipse
 add_dot_attributes <- function(nodes, edges, collapse_nodes) {
     # prepare dataframe
     n <- nodes
     n <- n[is.na(n[["effect"]]) | n[["effect"]] != "function", ]
-    e <- dplyr::distinct(edges, node_id) |>
+    e <- dplyr::distinct(edges, .data[["node_id"]]) |>
         dplyr::mutate(has_dependency = TRUE)
     x <- dplyr::left_join(n, e, by = "node_id")
     

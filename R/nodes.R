@@ -1,11 +1,18 @@
 # functions for defining diagram nodes
 
 # Parse an R file path into a list of expressions
-# A placeholder. Will probably want more to it than this 
-# (e.g., pulling sourced files recursively and reading Rmd)
 parse_script <- function(path_to_file) {
-    # TODO: determine whether this provides value over base::parse()
-    rlang::parse_exprs(file(path_to_file))
+    exprs <- rlang::parse_exprs(file(path_to_file))
+    # recursively pull in any sourced files
+    # NOTE: a couple limitations currently:
+    # - won't evaluate a variable within source (e.g., "source(path_to_file)")
+    # - won't account for setwd() (assumes same env used to call parse_script())
+    for (x in exprs) {
+        if (rlang::is_call(x, "source")) {
+            exprs <- c(parse_script(x[[2]]), exprs)
+        }
+    } 
+    exprs
 }
 
 # Get parsed data detail from expression
@@ -57,7 +64,7 @@ parse_statement <- function(x) {
 # - recurse: expressions beginning with these will lead to recursion
 parse_expression <- function(
     x, 
-    exclude = c("library", "print"), 
+    exclude = c("library", "print", "source"), 
     recurse = c("if", "==", "{", "for", ":")
 ) {
     if (is.call(x)) {

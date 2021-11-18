@@ -3,13 +3,9 @@
 # Identify dot attributes for every node
 # name, shape, fillcolor, label, tooltips
 # input is box, others are ellipse
-add_dot_attributes <- function(nodes, edges) {
+add_dot_attributes <- function(nodes, edges, collapse_nodes) {
     # prepare dataframe
-    if (length(unique(nodes$node_id)) == nrow(nodes)) {
-        n <- nodes[, c("node_id", "assign", "effect", "text")]
-    } else {
-        n <- collapse_across_nodes(nodes)
-    }
+    n <- nodes
     n <- n[is.na(n[["effect"]]) | n[["effect"]] != "function", ]
     e <- dplyr::distinct(edges, node_id) |>
         dplyr::mutate(has_dependency = TRUE)
@@ -22,6 +18,7 @@ add_dot_attributes <- function(nodes, edges) {
         x[["shape"]] == "box" | is.na(x[["effect"]]), 
         x[["assign"]], x[["effect"]]
     )
+    x[["text"]] <- paste0("# Node ", x[["node_id"]], "\n", x[["text"]])
     x[["text"]] <- gsub('\"', '&quot;', x[["text"]])
     x
 }

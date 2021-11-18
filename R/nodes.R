@@ -97,9 +97,8 @@ parse_nodes <- function(exprs) {
 # - combine: an assignment with multiple dependencies
 # - effect: a node with no assignment
 add_node_type <- function(nodes, dependencies) {
-    d_count <- dplyr::count(dependencies, .data[["node_id"]])
-    n <- dplyr::left_join(nodes, d_count, by = "node_id")
-    is_func <- function(text) {
+    # assigned functions will be their own category
+    is_assigned_func <- function(text) {
         expr <- rlang::parse_expr(text)
         if (rlang::is_call(expr, "<-")) {
             expr <- expr[[3]]
@@ -110,18 +109,34 @@ add_node_type <- function(nodes, dependencies) {
             FALSE
         }
     }
-    n[["is_func"]] <- lapply(n$text, is_func) |> unlist()
+    n <- nodes
+    n[["is_func"]] <- lapply(n[["text"]], is_assigned_func) |> unlist()
+    
+    # identify "mutate" nodes
+    func_ids <- n[n[["is_func"]], "node_id"]
+    d_count <- dependencies |>
+        dplyr::filter(!.data[["node_id_dependency"]] %in% func_ids) |>
+        dplyr::count(.data[["node_id"]]) 
+    n <- dplyr::left_join(n, d_count, by = "node_id")
     n[["type"]] <- ifelse(is.na(n[["assign"]]), "effect",
         ifelse(n[["is_func"]], "function",                   
             ifelse(is.na(n[["n"]]), "input", 
                 ifelse(n[["n"]] == 1, "mutate", "combine")
     )))
+    rownames(n) <- NULL
     n[, c("node_id", "expr_id", "assign", "member", "effect", "type", "text")]
 }
 
-# Collapse to one row per node_id in the nodes dataframe
-collapse_across_nodes <- function(nodes) {
-    dplyr::arrange(nodes, .data[["node_id_og"]]) |>
+# Collapse mutate nodes into their input nodes
+collapse_across_nodes <- function(nodes, edges) {
+    mutate_ids <- nodes[nodes[["type"]] == "mutate", "node_id"]
+    x <- edges[edges[["node_id"]] %in% mutate_ids, ]
+    names(x)[2] <- "new"
+    nodes |>
+        dplyr::left_join(x, by = "node_id") |>
+        dplyr::mutate(node_id = ifelse(
+            is.na(.data[["new"]]), .data[["node_id"]], .data[["new"]]
+        )) |>
         dplyr::group_by(.data[["node_id"]]) |>
         dplyr::summarise(
             assign = dplyr::first(.data[["assign"]]),

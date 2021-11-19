@@ -4,13 +4,16 @@
 \alias{plot_flow}
 \title{Plot dataflow graph from R code}
 \usage{
-plot_flow(path_to_file, collapse_nodes = TRUE)
+plot_flow(path_to_file, collapse_nodes = TRUE, exclude_text = FALSE)
 }
 \arguments{
 \item{path_to_file}{character: A file path string}
 
 \item{collapse_nodes}{logical: If TRUE, any dependencies on "mutate" nodes
 will be set to their parent "non-mutate" nodes.}
+
+\item{exclude_text}{logical: If TRUE, code for a node will not be available
+on hover}
 }
 \value{
 Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}

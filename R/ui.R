@@ -25,6 +25,8 @@ get_flow_data <- function(path_to_file, collapse_nodes = TRUE) {
 #' @param flow_data list of 2 dataframes returned by \code{\link{get_flow_data}}
 #' @param collapse_nodes logical: If TRUE, collapse "mutate" nodes into their
 #' parent non-mutate nodes.
+#' @param exclude_text logical: If TRUE, code for a node will not be available
+#' on hover
 #'
 #' @return Returns a string in a dotfile-compatible format
 #' @export
@@ -46,6 +48,7 @@ make_dot <- function(flow_data, collapse_nodes = TRUE, exclude_text = FALSE) {
 #' Plot dataflow graph from R code
 #'
 #' @inheritParams get_flow_data
+#' @inheritParams make_dot
 #'
 #' @return Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}
 #' @export

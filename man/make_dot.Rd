@@ -4,13 +4,16 @@
 \alias{make_dot}
 \title{Convert nodes/edges into a dotfile format for dataflow graph}
 \usage{
-make_dot(flow_data, collapse_nodes = TRUE)
+make_dot(flow_data, collapse_nodes = TRUE, exclude_text = FALSE)
 }
 \arguments{
 \item{flow_data}{list of 2 dataframes returned by \code{\link{get_flow_data}}}
 
 \item{collapse_nodes}{logical: If TRUE, collapse "mutate" nodes into their
 parent non-mutate nodes.}
+
+\item{exclude_text}{logical: If TRUE, code for a node will not be available
+on hover}
 }
 \value{
 Returns a string in a dotfile-compatible format

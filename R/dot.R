@@ -1,20 +1,25 @@
 # functions for defining dot specification
 
-add_dot_attributes <- function(nodes, edges) {
+add_dot_attributes <- function(nodes, edges, minimal_label = FALSE) {
     # prepare dataframe
     n <- nodes
     n <- n[is.na(n[["effect"]]) | n[["effect"]] != "function", ]
     e <- dplyr::distinct(edges, .data[["node_id"]]) |>
         dplyr::mutate(has_dependency = TRUE)
     x <- dplyr::left_join(n, e, by = "node_id")
+    x[["effect"]] <- ifelse(is.na(x[["effect"]]), "", x[["effect"]])
+    x[["assign"]] <- ifelse(is.na(x[["assign"]]), "", x[["assign"]])
     
     # define attributes
-    x[["shape"]] <- ifelse(is.na(x[["has_dependency"]]), "box", "ellipse")
+    x[["shape"]] <- ifelse(is.na(x[["has_dependency"]]), "input", "other")
     x[["name"]] <- paste0("n", x[["node_id"]])
-    x[["label"]] <- ifelse(
-        x[["shape"]] == "box" | is.na(x[["effect"]]), 
-        x[["assign"]], x[["effect"]]
-    )
+    x[["label"]] <- paste(x[["assign"]], "|", x[["effect"]])
+    if (minimal_label) {
+        x[["label"]] <- ifelse(
+            x[["shape"]] == "input" | x[["effect"]] == "", 
+            x[["assign"]], x[["effect"]]
+        )
+    }
     x[["text"]] <- paste0("# Node ", x[["node_id"]], "\n", x[["text"]])
     x[["text"]] <- gsub('\"', '&quot;', x[["text"]])
     x
@@ -36,15 +41,15 @@ make_dot_nodes <- function(nodes, exclude_text = FALSE) {
     assemble_subgraph <- function(x, shape, fillcolor) {
         paste0(
             "subgraph ", shape, " {", "\n",
-            "node [shape=", shape, 
-            ", style=filled, fillcolor='", fillcolor, "']", "\n", 
+            "node [shape=record, style='rounded, filled', fillcolor='", 
+            fillcolor, "']", "\n", 
             assemble_attributes(x[[shape]]), "\n", 
             "}"
         )
     }
     paste(
-        assemble_subgraph(x, "box", "#cce0ff"),
-        assemble_subgraph(x, "ellipse", "#f9ffe6"),
+        assemble_subgraph(x, "input", "#cce0ff"),
+        assemble_subgraph(x, "other", "#f9ffe6"),
         sep = "\n\n"
     )
 }

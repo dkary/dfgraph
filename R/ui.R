@@ -27,10 +27,15 @@ get_flow_data <- function(path_to_file, collapse_nodes = TRUE) {
 #' parent non-mutate nodes.
 #' @param exclude_text logical: If TRUE, code for a node will not be available
 #' on hover
+#' @param minimal_label logical: If TRUE, less information will be displayed
+#' in node labels.
 #'
 #' @return Returns a string in a dotfile-compatible format
 #' @export
-make_dot <- function(flow_data, collapse_nodes = TRUE, exclude_text = FALSE) {
+make_dot <- function(
+    flow_data, collapse_nodes = TRUE, exclude_text = FALSE, 
+    minimal_label = FALSE
+) {
     f <- flow_data
     f[["edges"]] <- drop_function_edges(f[["edges"]], f[["nodes"]])
     if (collapse_nodes) {
@@ -39,7 +44,7 @@ make_dot <- function(flow_data, collapse_nodes = TRUE, exclude_text = FALSE) {
     } else {
         f[["nodes"]] <- f[["nodes"]][, c("node_id", "assign", "effect", "text")]
     }
-    n <- add_dot_attributes(f[["nodes"]], f[["edges"]])
+    n <- add_dot_attributes(f[["nodes"]], f[["edges"]], minimal_label)
     n <- make_dot_nodes(n, exclude_text)
     e <- make_dot_edges(f[["edges"]])
     paste("digraph {", n, e, "}", sep = "\n\n")
@@ -52,8 +57,11 @@ make_dot <- function(flow_data, collapse_nodes = TRUE, exclude_text = FALSE) {
 #'
 #' @return Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}
 #' @export
-plot_flow <- function(path_to_file, collapse_nodes = TRUE, exclude_text = FALSE) {
+plot_flow <- function(
+    path_to_file, collapse_nodes = TRUE, exclude_text = FALSE,
+    minimal_label = FALSE
+) {
     f <- get_flow_data(path_to_file, collapse_nodes)
-    dot <- make_dot(f, collapse_nodes, exclude_text)
+    dot <- make_dot(f, collapse_nodes, exclude_text, minimal_label)
     DiagrammeR::grViz(dot)
 }

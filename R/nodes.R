@@ -90,8 +90,10 @@ parse_expression <- function(
 parse_nodes <- function(exprs) {
     nodes <- lapply(seq_along(exprs), function(i) {
         x <- parse_expression(exprs[[i]])
-        if (nrow(x) > 0) {
-            x[["expr_id"]] <- i
+        if (is.data.frame(x)) {
+            if (nrow(x) > 0 ){
+                x[["expr_id"]] <- i
+            }
         }
         x
     })

@@ -2,8 +2,8 @@
 
 add_dot_attributes <- function(nodes, edges, minimal_label = FALSE) {
     # prepare dataframe
-    n <- nodes
-    n <- n[is.na(n[["effect"]]) | n[["effect"]] != "function", ]
+    nodes_to_include <- unique(c(edges[["node_id"]], edges[["node_id_dependency"]]))
+    n <- nodes[nodes[["node_id"]] %in% nodes_to_include, ]
     e <- dplyr::distinct(edges, .data[["node_id"]]) |>
         dplyr::mutate(has_dependency = TRUE)
     x <- dplyr::left_join(n, e, by = "node_id")

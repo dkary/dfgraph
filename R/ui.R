@@ -5,10 +5,14 @@
 #' @param path_to_file character: A file path string
 #' @param collapse_nodes logical: If TRUE, any dependencies on "mutate" nodes
 #' will be set to their parent "non-mutate" nodes.
+#' @param prune_labels character: If not NULL, any nodes with labels matching
+#' those specified will be dropped (although their dependencies will be cascaded).
 #'
 #' @return Returns a list of two dataframes ("nodes" and "edges")
 #' @export
-get_flow_data <- function(path_to_file, collapse_nodes = TRUE) {
+get_flow_data <- function(
+    path_to_file, collapse_nodes = TRUE, prune_labels = NULL
+) {
     exprs <- parse_script(path_to_file)
     nodes <- parse_nodes(exprs)
     edges <- get_dependencies(nodes)
@@ -16,7 +20,7 @@ get_flow_data <- function(path_to_file, collapse_nodes = TRUE) {
     if (collapse_nodes) {
         edges <- cascade_depends(edges, nodes[nodes[["type"]] == "mutate", "node_id"])
     }
-    edges <- cascade_depends(edges, nodes[nodes[["type"]] == "function", "node_id"])
+    edges <- prune_node_edges(edges, nodes, prune_labels)
     list("nodes" = nodes, "edges" = edges)
 }
 
@@ -37,7 +41,6 @@ make_dot <- function(
     minimal_label = FALSE
 ) {
     f <- flow_data
-    f[["edges"]] <- drop_function_edges(f[["edges"]], f[["nodes"]])
     if (collapse_nodes) {
         f[["nodes"]] <- collapse_across_nodes(f[["nodes"]], f[["edges"]])
         f[["edges"]] <-  dplyr::semi_join(f[["edges"]], f[["nodes"]], by = "node_id")
@@ -59,9 +62,9 @@ make_dot <- function(
 #' @export
 plot_flow <- function(
     path_to_file, collapse_nodes = TRUE, exclude_text = FALSE,
-    minimal_label = FALSE
+    minimal_label = FALSE, prune_labels = NULL
 ) {
-    f <- get_flow_data(path_to_file, collapse_nodes)
+    f <- get_flow_data(path_to_file, collapse_nodes, prune_labels)
     dot <- make_dot(f, collapse_nodes, exclude_text, minimal_label)
     DiagrammeR::grViz(dot)
 }

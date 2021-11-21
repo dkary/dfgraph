@@ -100,11 +100,24 @@ cascade_depends <- function(edges, ids) {
     dplyr::distinct(e)
 }
 
-# Remove assigned function dependencies from edges dataframe
-drop_function_edges <- function(edges, nodes) {
-    funcs <- nodes[nodes[["effect"]] == "function", "node_id"]
+# Prune function nodes (from edges dataframe) and optionally additional nodes 
+# Additional nodes are selected based on matching node labels (in assign or effect)
+prune_node_edges <- function(edges, nodes, labels = NULL) {
+    # We'll always prune function IDs (at least for now)
+    ids <- nodes[nodes[["type"]] == "function", "node_id"]
+    
+    if (!is.null(labels)) {
+        effect_ids <- nodes[
+            !is.na(nodes[["effect"]]) & nodes[["effect"]] %in% labels, "node_id"
+        ]
+        assign_ids <- nodes[
+            !is.na(nodes[["assign"]]) & nodes[["assign"]] %in% labels, "node_id"
+        ]
+        ids <- c(ids, assign_ids, effect_ids)
+    }
+    edges <- cascade_depends(edges, ids)
     edges[
-        !edges[["node_id"]] %in% funcs 
-        & !edges[["node_id_dependency"]] %in% funcs,
+        !edges[["node_id"]] %in% ids
+        & !edges[["node_id_dependency"]] %in% ids,
     ]
 }

@@ -4,13 +4,16 @@
 \alias{get_flow_data}
 \title{Extract nodes and edges from R code}
 \usage{
-get_flow_data(path_to_file, collapse_nodes = TRUE)
+get_flow_data(path_to_file, collapse_nodes = TRUE, prune_labels = NULL)
 }
 \arguments{
 \item{path_to_file}{character: A file path string}
 
 \item{collapse_nodes}{logical: If TRUE, any dependencies on "mutate" nodes
 will be set to their parent "non-mutate" nodes.}
+
+\item{prune_labels}{character: If not NULL, any nodes with labels matching
+those specified will be dropped (although their dependencies will be cascaded).}
 }
 \value{
 Returns a list of two dataframes ("nodes" and "edges")

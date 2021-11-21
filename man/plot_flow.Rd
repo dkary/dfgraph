@@ -4,7 +4,13 @@
 \alias{plot_flow}
 \title{Plot dataflow graph from R code}
 \usage{
-plot_flow(path_to_file, collapse_nodes = TRUE, exclude_text = FALSE)
+plot_flow(
+  path_to_file,
+  collapse_nodes = TRUE,
+  exclude_text = FALSE,
+  minimal_label = FALSE,
+  prune_labels = NULL
+)
 }
 \arguments{
 \item{path_to_file}{character: A file path string}
@@ -14,6 +20,12 @@ will be set to their parent "non-mutate" nodes.}
 
 \item{exclude_text}{logical: If TRUE, code for a node will not be available
 on hover}
+
+\item{minimal_label}{logical: If TRUE, less information will be displayed
+in node labels.}
+
+\item{prune_labels}{character: If not NULL, any nodes with labels matching
+those specified will be dropped (although their dependencies will be cascaded).}
 }
 \value{
 Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}

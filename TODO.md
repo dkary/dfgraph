@@ -2,20 +2,18 @@
 # TODO 
 
 - [x] propagate function global dependencies
-- [ ] set up R package structure (and roxygen docs)
-- [ ] proof of concept
+- [x] set up R package structure (and roxygen docs)
+- [x] proof of concept
+- [ ] interactivity and corresponding POC
 - [ ] vignette and/or links to blog posts
 - [ ] testing
 
-## Dependencies
+## Bugs
 
-- probably no need for these:
-    + dplyr
-    + tibble
-- these are probably worthwhile
-    + rlang
-    + tools, knitr (for reading Rmd)
-    + DiagrammeR
+- [ ] Error in if (is.name(f_formals[[i]]) & f_formals[[i]] != "") { :  argument is of length zero
+- [ ] cannot open connection errors are vague (i.e., when a source script can't be found)
+    + will need to do a bit of a refresher on error handling in R
+- [ ] Error: syntax error in line 7 near 'answer': For the B4W > svy/3-flags.R. It occurs in a `tibble::tribble()` in lines 29 to 47
 
 ## Data Prep
 
@@ -51,13 +49,27 @@
 - [ ] increase tooltip size (and maybe responsiveness)
 - [x] better implementation of numbers stripped from node names for labelling (e.g., if we want to show attributes, we would want the exact name assigned, even if it has numbers)
 - [ ] correctly represent `|>` in tooltips (instead of using the parsed representation which converts to nested functions)
+- [ ] (maybe) give effects (i.e., terminal nodes) their own color (green seems to make the most sense, so maybe yellow for intermediate)
+- [ ] (maybe) prune_ids option to remove individual nodes based on their numeric IDs
+- [ ] (maybe) better node collapsing
+    + [ ] fix bug with ifelse in column assignment (from wmi code examples)
+    + [ ] collapse to unique mutates rather than all the way to input. The basic issue it that parallell mutate tracks can get collapsed, but this is counterintuitive
+- [ ] (maybe) another color for terminal nodes. Maybe make these green and change interim nodes to yellow.
+    
+## Interactivity
+
+- [ ] Plot interactivity for collapsing/expanding nodes
+    + watershed metaphor: every edge could have a +/-
+    + a "-" would collapse everything above the edge to one node
+    + a "+" would expand a collapsed node to some degree
+- [ ] lines from the file would improve my ability to use the graph alongside the code
+    + see hand notes
+    
+- [ ] (maybe) an alternative option (or default approach) to propagating function globals b/c it can introduce a spaghetti-looking effect when a function is run multiple times (e.g., when only one argument varies across runs). Maybe it would be more useful to show globally-assigned functions in their own track with their dependencies specified. Note that this situation happens with the nc lifetime analysis script:
+    + and it might actually be more interesting to be able to examine what is going on within the big run_analysis() function than the script, so expanding a function node would be a useful feature
 
 ## Lower Priority
 
 - [ ] consider capturing control flow and nesting in parsed output (which could seemingly be useful to visualize)
     + Interesting that the native pipe is automatically converted to nested calls in the expression. Makes sense, but won't be nice for viewing code if that feature is included
     
-- [ ] Plot interactivity for collapsing/expanding nodes
-    + watershed metaphor: every edge could have a +/-
-    + a "-" would collapse everything above the edge to one node
-    + a "+" would expand a collapsed node to some degree

@@ -1,7 +1,7 @@
 
 # dataflow
 
-Visualize how data flows through an R script to better understand unfamiliar (or complex) workflows. Maybe even leverage `dataflow` when writing code to steer towards better patterns.
+Visualize how data flows through an R script to illuminate unfamiliar workflows or guide your works-in-progress. 
 
 Note: This package is in a **pre-alpha state** and not yet intended for serious use (although you're welcome to test/experiment). There will likely be major changes in the near future (e.g., to enable interactivity).
 
@@ -16,9 +16,10 @@ remotes::install_github("dkary/dataflow")
 
 ## Usage
 
-Currently only static plots can be produced (although code is viewable on hover by leveraging the [DiagrammeR](https://github.com/rich-iannone/DiagrammeR) package):
+Run `dataflow::plot_flow("path_to_R_or_Rmd_file")` from the R console (which leverages the [DiagrammeR](https://github.com/rich-iannone/DiagrammeR) package with a   [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) format under the hood).
 
 ```r
+# Example
 dataflow::plot_flow(
     "testdat/svy-weight.R",
     # to exclude diagnostic checks from the plot
@@ -32,6 +33,6 @@ dataflow::plot_flow(
 
 The most obvious limitation is that code is inherently flexible, and I won't be able to capture all the ways people might program. For example:
 
-- We can misidentify dependencies due to name scoping (e.g., column "d" vs. dataframe "d") with non-standard evaluation (e.g., in `dplyr`).
+- We can misidentify dependencies due to name scoping (e.g., dataframe$column "d" vs. global variable "d") with non-standard evaluation (e.g., in `dplyr`).
 
 However, I suspect that I can capture enough of the common data science coding patterns for the package to nonetheless be useful (more details in [Proof of Concept](ref/POC.md)).

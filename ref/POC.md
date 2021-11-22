@@ -10,26 +10,32 @@ This is partly motivated by the "fail fast" approach. I tend to think that `data
 
 ## TODO
 
-- [x] Test on Southwick code
+- [x] Test on SA code
 - [ ] Test on other R project code in the wild on Github
 
-## Plan
+### Plan
 
 Test `plot_flow()` on a variety of in-the-wild R scripts. This will probably reveal bugs, so it may take some time (try not to get discouraged). I think it's okay to iterate and fix serious bugs, but my goal is to document (bugs found, features to prioritize, etc.). And, of course, assess whether `dataflow` appears feasible at all.
 
 ## Observations about Patterns
 
-One of the reasons I'm feeling good about the POC is that I learned some things about the POC code by looking at the dataflow. If the patterns I observed have generalized usefulness, then the approach is probably useful. Relying on my innate (human) ability for visual pattern recognition, I was able to home in on several common patterns:
+One of the reasons I'm feeling good about the POC is that I discovered some things about the POC scripts by examining the dataflow. If the patterns I observed have generalized utility, then the approach is probably worthwhile. People are good at visual pattern recognition, and even with a short timeframe I was able to map out some pattern categories. The first two were concepts I had already internalized, but the last three never really caught my attention until I examined a variety of dataflows:
+
+- [Assemble](#assemble)
+- [Expand](#expand)
+- [Reconfigure](#reconfigure)
+- [Interact](#interact) (an interdependence antipattern)
+- [Pmap](#pmap) (multi input with multi output)
 
 ### Assemble
 
-Multiple inputs with one output. This is a natural pattern in data processing and has some nice characteristics (easy to understand, modularize, etc.).
+Multiple inputs with one output. This is a natural pattern in data processing and has some nice characteristics (easy to understand, modularize, etc.). The example below doesn't precisely follow that pattern since it has two outputs: a table of computed weights and a survey dataset with the weights applied. However, saving the weights table is a side-effect and the dataset itself is a direct input to the output survey table.
 
 ![](img/assemble.png)
 
 ### Expand
 
-The opposite of *assemble* (i.e., fewer inputs lead to more outputs). This is probably a natural pattern in reporting-type analysis, but I suspect it can indicate repetition (a possible anti-pattern) in other contexts.
+The opposite of *assemble* (i.e., fewer inputs lead to more outputs). This is probably a natural pattern in reporting-type analysis, but I suspect it can indicate repetition (a probable antipattern) in other contexts.
 
 ![](img/expand.png)
 
@@ -39,17 +45,17 @@ A linked *expand-assemble*. I think it naturally arises when you have one (or fe
 
 ![](img/reconfigure.png)
 
-### Interdependence
+### Interact
 
-I originally called this *spaghetti* because of the confused criss-crossing of edges. On closer inspection a pattern of parallel pipelines occasionally intersecting appeared to be the cause. I suspect there are a variety of cases where analysts will fall into this *anti-pattern*, and some of them are probably more problematic than others:
+I originally called this *spaghetti* because of the confused criss-crossing of edges. On closer inspection a pattern of parallel pipelines occasionally intersecting appeared to be the cause (i.e., interdependence). I suspect there are a variety of cases where analysts will fall into this *anti-pattern*, and some of them are probably more problematic than others:
 
-- Checks: Running checks (in analysis) to ensure an output conforms to expectations given values in other datasets.
+- **Checks**: Running checks (in analysis) to ensure an output conforms to expectations given values in other datasets.
 
-- Summary Columns: Splitting a dataset into a relational model, and then adding summary columns (for ease of analysis) to higher-level dimensions. It can create interdependence when building higher and lower-level dimensions.
+- **Summary Columns**: Splitting a dataset into a relational model, and then adding summary columns (for ease of analysis) to higher-level dimensions. It can create interdependence when building higher and lower-level dimensions.
 
 ![](img/interdependence.png)
 
-### Popular Inputs
+### Pmap
 
 Another cause of criss-crossing edges in when multiple inputs are used in multiple outputs. It looks awful, but it could be a simple matter of a functional approach (i.e., maybe one input varies to produce different outputs). It may still be a bit of an anti-pattern since the example I used suggests a split-apply-combine strategy would be appropriate (which would eliminate the criss-crossing).
 
@@ -59,7 +65,7 @@ This is a somewhat different case in which the `pop` dataset is repeatedly used 
 
 ![](img/popular-input.png)
 
-## Interdependence Anti-Pattern
+## Interact Anti-Pattern
 
 I think I've found a good candidate in my `nc > 2a-standardize-hunt-fish.R`. Some ideas:
 

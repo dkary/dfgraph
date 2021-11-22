@@ -10,10 +10,10 @@
 
 ## Bugs
 
-- [ ] Error in if (is.name(f_formals[[i]]) & f_formals[[i]] != "") { :  argument is of length zero
-- [ ] cannot open connection errors are vague (i.e., when a source script can't be found)
+- [x] Error in if (is.name(f_formals[[i]]) & f_formals[[i]] != "") { :  argument is of length zero
+- [ ] `cannot open connection errors` are vague (i.e., when a source script can't be found)
     + will need to do a bit of a refresher on error handling in R
-- [ ] Error: syntax error in line 7 near 'answer': For the B4W > svy/3-flags.R. It occurs in a `tibble::tribble()` in lines 29 to 47
+- [ ] `Error: syntax error in line 7 near 'answer'`: For the B4W > svy/3-flags.R. It occurs in a `tibble::tribble()` in lines 29 to 47
 
 ## Data Prep
 
@@ -49,12 +49,11 @@
 - [ ] increase tooltip size (and maybe responsiveness)
 - [x] better implementation of numbers stripped from node names for labelling (e.g., if we want to show attributes, we would want the exact name assigned, even if it has numbers)
 - [ ] correctly represent `|>` in tooltips (instead of using the parsed representation which converts to nested functions)
-- [ ] (maybe) give effects (i.e., terminal nodes) their own color (green seems to make the most sense, so maybe yellow for intermediate)
+- [x] (maybe) give effects (i.e., terminal nodes) their own color (green seems to make the most sense, so maybe yellow for intermediate)
 - [ ] (maybe) prune_ids option to remove individual nodes based on their numeric IDs
 - [ ] (maybe) better node collapsing
     + [ ] fix bug with ifelse in column assignment (from wmi code examples)
     + [ ] collapse to unique mutates rather than all the way to input. The basic issue it that parallell mutate tracks can get collapsed, but this is counterintuitive
-- [ ] (maybe) another color for terminal nodes. Maybe make these green and change interim nodes to yellow.
     
 ## Interactivity
 

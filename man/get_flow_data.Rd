@@ -4,7 +4,7 @@
 \alias{get_flow_data}
 \title{Extract nodes and edges from R code}
 \usage{
-get_flow_data(path_to_file, collapse_nodes = TRUE, prune_labels = NULL)
+get_flow_data(path_to_file, collapse_nodes = FALSE, prune_labels = NULL)
 }
 \arguments{
 \item{path_to_file}{character: A file path string}

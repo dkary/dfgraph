@@ -6,7 +6,7 @@
 \usage{
 make_dot(
   flow_data,
-  collapse_nodes = TRUE,
+  collapse_nodes = FALSE,
   exclude_text = FALSE,
   minimal_label = FALSE
 )

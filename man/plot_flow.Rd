@@ -6,7 +6,7 @@
 \usage{
 plot_flow(
   path_to_file,
-  collapse_nodes = TRUE,
+  collapse_nodes = FALSE,
   exclude_text = FALSE,
   minimal_label = FALSE,
   prune_labels = NULL

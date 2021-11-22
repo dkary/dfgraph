@@ -11,7 +11,7 @@
 #' @return Returns a list of two dataframes ("nodes" and "edges")
 #' @export
 get_flow_data <- function(
-    path_to_file, collapse_nodes = TRUE, prune_labels = NULL
+    path_to_file, collapse_nodes = FALSE, prune_labels = NULL
 ) {
     exprs <- parse_script(path_to_file)
     nodes <- parse_nodes(exprs)
@@ -37,7 +37,7 @@ get_flow_data <- function(
 #' @return Returns a string in a dotfile-compatible format
 #' @export
 make_dot <- function(
-    flow_data, collapse_nodes = TRUE, exclude_text = FALSE, 
+    flow_data, collapse_nodes = FALSE, exclude_text = FALSE, 
     minimal_label = FALSE
 ) {
     f <- flow_data
@@ -61,7 +61,7 @@ make_dot <- function(
 #' @return Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}
 #' @export
 plot_flow <- function(
-    path_to_file, collapse_nodes = TRUE, exclude_text = FALSE,
+    path_to_file, collapse_nodes = FALSE, exclude_text = FALSE,
     minimal_label = FALSE, prune_labels = NULL
 ) {
     f <- get_flow_data(path_to_file, collapse_nodes, prune_labels)

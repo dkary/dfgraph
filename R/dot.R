@@ -11,7 +11,10 @@ add_dot_attributes <- function(nodes, edges, minimal_label = FALSE) {
     x[["assign"]] <- ifelse(is.na(x[["assign"]]), "", x[["assign"]])
     
     # define attributes
-    x[["shape"]] <- ifelse(is.na(x[["has_dependency"]]), "input", "other")
+    x[["shape"]] <- ifelse(
+        is.na(x[["has_dependency"]]), "input", 
+        ifelse(x[["assign"]] == "", "terminal", "interim")
+    )
     x[["name"]] <- paste0("n", x[["node_id"]])
     x[["label"]] <- paste(x[["assign"]], "|", x[["effect"]])
     if (minimal_label) {
@@ -49,7 +52,8 @@ make_dot_nodes <- function(nodes, exclude_text = FALSE) {
     }
     paste(
         assemble_subgraph(x, "input", "#cce0ff"),
-        assemble_subgraph(x, "other", "#f9ffe6"),
+        assemble_subgraph(x, "interim", "#f9ffe6"),
+        assemble_subgraph(x, "terminal", "#ffcc80"),
         sep = "\n\n"
     )
 }

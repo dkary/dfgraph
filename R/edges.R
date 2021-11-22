@@ -20,8 +20,8 @@ parse_statement_depends <- function(expr) {
         # 2. identify any globals called by default argument values
         globals <- c() 
         for (i in seq_along(f_formals)) {
-            if (is.name(f_formals[[i]]) & f_formals[[i]] != "") {
-                globals <- c(globals, rlang::as_string(f_formals[[i]]))
+            if (is.name(f_formals[i]) & f_formals[i] != "") {
+                globals <- c(globals, rlang::as_string(f_formals[i]))
             }
         }
         # 3. parse nodes from the function expression

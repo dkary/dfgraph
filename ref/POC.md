@@ -53,7 +53,7 @@ I originally called this *spaghetti* because of the confused criss-crossing of e
 
 - **Summary Columns**: Splitting a dataset into a relational model, and then adding summary columns (for ease of analysis) to higher-level dimensions. It can create interdependence when building higher and lower-level dimensions.
 
-![](img/interdependence.png)
+![](img/interact.png)
 
 ### Pmap
 

@@ -2,10 +2,14 @@
 
 # Identify node labels depending on specified option
 get_dot_label <- function(
-    assign_label, function_label, node_type, label_option
+    assign_label, member_label, function_label, node_type, label_option
 ) {
     assign_label[is.na(assign_label)] <- ""
     function_label[is.na(function_label)] <- ""
+    assign_label <- ifelse(
+        is.na(member_label), assign_label,
+        paste0(assign_label, "$", member_label)
+    )
     if (label_option == "assign") {
         assign_label
     } else if (label_option == "function") {
@@ -40,7 +44,8 @@ add_dot_attributes <- function(nodes, edges, label_option = "both") {
     )
     x[["name"]] <- paste0("n", x[["id"]])
     x[["label"]] <- get_dot_label(
-        x[["assign"]], x[["function"]], x[["node_type"]], label_option
+        x[["assign"]], x[["member"]], x[["function"]], x[["node_type"]], 
+        label_option
     )
     x[["code"]] <- paste0("# Node ", x[["id"]], "\n", x[["code"]])
     x[["code"]] <- gsub('\"', '&quot;', x[["code"]])

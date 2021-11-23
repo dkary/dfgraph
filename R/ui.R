@@ -39,7 +39,6 @@ make_dot <- function(
     label_option = "both"
 ) {
     f <- flow_data
-    f[["nodes"]] <- f[["nodes"]][, c("id", "assign", "function", "code")]
     n <- add_dot_attributes(f[["nodes"]], f[["edges"]], label_option)
     n <- make_dot_nodes(n, exclude_text)
     e <- make_dot_edges(f[["edges"]])

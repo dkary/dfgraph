@@ -51,13 +51,13 @@ get_node_depends <- function(node) {
         d <- c(d, node[["assign"]])
     }
     if (length(d) > 0) {
-        data.frame("id" = node[["id"]], "dependency" = d)
+        data.frame("to" = node[["id"]], "from_name" = d)
     }
 }
 
-# Pull dependencies from parsed dataframe
+# Get dependencies for all nodes in a dataframe
 # - nodes: dataframe returned by parse_nodes()
-get_dependencies <- function(nodes) {
+get_depends <- function(nodes) {
     depends <- data.frame()
     for (i in 1:nrow(nodes)) {
         d <- get_node_depends(nodes[i, ])
@@ -68,18 +68,18 @@ get_dependencies <- function(nodes) {
             n <- nodes[
                 !is.na(nodes[["assign"]])
                 & nodes[["id"]] < i 
-                & nodes[["assign"]] == d[j, "dependency"], ]
+                & nodes[["assign"]] == d[j, "from_name"], ]
             if (nrow(n) > 0) {
-                d[j, "node_id_dependency"] <- max(n[["id"]])
+                d[j, "from"] <- max(n[["id"]])
             } else {
-                d[j, "node_id_dependency"] <- NA
+                d[j, "from"] <- NA
             }
         }
         depends <- rbind(depends, d)
     }
-    depends <- depends[!is.na(depends[["node_id_dependency"]]), ]
+    depends <- depends[!is.na(depends[["from"]]), ]
     rownames(depends) <- NULL
-    depends[, c("id", "node_id_dependency")]
+    depends[, c("to", "from")]
 }
 
 # Cascade dependencies for selected node IDs
@@ -87,14 +87,14 @@ get_dependencies <- function(nodes) {
 cascade_depends <- function(edges, ids) {
     e <- edges
     for (id in ids) {
-        x <- e[e[["id"]] == id, ]
-        names(x) <- c("node_id_dependency", "new")
-        e <- merge(e, x, by = "node_id_dependency", all.x = TRUE)
-        e[["node_id_dependency"]] <- ifelse(
-            is.na(e[["new"]]), e[["node_id_dependency"]], e[["new"]]
+        x <- e[e[["to"]] == id, ]
+        names(x) <- c("from", "new")
+        e <- merge(e, x, by = "from", all.x = TRUE)
+        e[["from"]] <- ifelse(
+            is.na(e[["new"]]), e[["from"]], e[["new"]]
         )
         e[["new"]] <- NULL
-        e <- e[order(e[["id"]]), c("id", "node_id_dependency")]
+        e <- e[order(e[["to"]]), c("to", "from")]
     }
     rownames(e) <- NULL
     dplyr::distinct(e)
@@ -117,7 +117,7 @@ prune_node_edges <- function(edges, nodes, prune_labels = NULL) {
     }
     edges <- cascade_depends(edges, ids)
     edges[
-        !edges[["id"]] %in% ids
-        & !edges[["node_id_dependency"]] %in% ids,
+        !edges[["to"]] %in% ids
+        & !edges[["from"]] %in% ids,
     ]
 }

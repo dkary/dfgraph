@@ -4,24 +4,18 @@
 \alias{make_dot}
 \title{Convert nodes/edges into a dotfile format for dataflow graph}
 \usage{
-make_dot(
-  flow_data,
-  collapse_nodes = FALSE,
-  exclude_text = FALSE,
-  label_option = "both"
-)
+make_dot(nodes, edges, label_option = "both", exclude_text = FALSE)
 }
 \arguments{
-\item{flow_data}{list of 2 dataframes returned by \code{\link{get_flow_data}}}
+\item{nodes}{dataframe with one row per diagram node}
 
-\item{collapse_nodes}{logical: If TRUE, collapse "mutate" nodes into their
-parent non-mutate nodes.}
+\item{edges}{dataframe with on row per diagram edge}
+
+\item{label_option}{character: Either "both" (default), "assign", "function" or
+"auto" (which uses "assign" for input nodes and "function" for others).}
 
 \item{exclude_text}{logical: If TRUE, code for a node will not be available
 on hover}
-
-\item{label_option}{character: Either "both" (default), "assign", "effect" or
-"auto" (which uses "assign" for input nodes and "effect" for others).}
 }
 \value{
 Returns a string in a dotfile-compatible format

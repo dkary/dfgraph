@@ -31,9 +31,9 @@ add_dot_attributes <- function(nodes, edges, label_option = "both") {
         stop("The graph has no edges, so there is nothing to see here!", call. = FALSE)
     }
     # prepare dataframe
-    nodes_to_include <- unique(c(edges[["id"]], edges[["node_id_dependency"]]))
+    nodes_to_include <- unique(c(edges[["to"]], edges[["from"]]))
     n <- nodes[nodes[["id"]] %in% nodes_to_include, ]
-    e <- dplyr::distinct(edges, .data[["id"]]) |>
+    e <- dplyr::distinct(edges, "id" = .data[["to"]]) |>
         dplyr::mutate(has_dependency = TRUE)
     x <- dplyr::left_join(n, e, by = "id")
     
@@ -86,8 +86,8 @@ make_dot_nodes <- function(nodes, exclude_text = FALSE) {
 
 # Make dot code for edges
 make_dot_edges <- function(edges) {
-    from <- paste0("n", edges[["node_id_dependency"]])
-    to <- paste0("n", edges[["id"]])
+    from <- paste0("n", edges[["from"]])
+    to <- paste0("n", edges[["to"]])
     e <- paste(from, "->", to)
     paste(e, collapse = " ")
 }

@@ -6,30 +6,26 @@
 \usage{
 plot_flow(
   path_to_file,
-  collapse_nodes = FALSE,
-  exclude_text = FALSE,
-  label_option = "both",
+  ignore_source = NULL,
   prune_labels = NULL,
-  ignore_source = NULL
+  label_option = "both",
+  exclude_text = FALSE
 )
 }
 \arguments{
 \item{path_to_file}{character: A file path string}
 
-\item{collapse_nodes}{logical: If TRUE, any dependencies on "mutate" nodes
-will be set to their parent "non-mutate" nodes.}
-
-\item{exclude_text}{logical: If TRUE, code for a node will not be available
-on hover}
-
-\item{label_option}{character: Either "both" (default), "assign", "effect" or
-"auto" (which uses "assign" for input nodes and "effect" for others).}
+\item{ignore_source}{character: If not NULL, any file names matching those
+specified will be ignored in any "source(filename)" within the scripts.}
 
 \item{prune_labels}{character: If not NULL, any nodes with labels matching
 those specified will be dropped (although their dependencies will be cascaded).}
 
-\item{ignore_source}{character: If not NULL, any file names matching those
-specified will be ignored in any "source(filename)" within the scripts.}
+\item{label_option}{character: Either "both" (default), "assign", "function" or
+"auto" (which uses "assign" for input nodes and "function" for others).}
+
+\item{exclude_text}{logical: If TRUE, code for a node will not be available
+on hover}
 }
 \value{
 Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}

@@ -29,8 +29,8 @@ get_flow_data <- function(
 #' parent non-mutate nodes.
 #' @param exclude_text logical: If TRUE, code for a node will not be available
 #' on hover
-#' @param label_option character: Either "both" (default), "assign", "effect" or
-#' "auto" (which uses "assign" for input nodes and "effect" for others).
+#' @param label_option character: Either "both" (default), "assign", "function" or
+#' "auto" (which uses "assign" for input nodes and "function" for others).
 #'
 #' @return Returns a string in a dotfile-compatible format
 #' @export
@@ -39,7 +39,7 @@ make_dot <- function(
     label_option = "both"
 ) {
     f <- flow_data
-    f[["nodes"]] <- f[["nodes"]][, c("node_id", "assign", "effect", "text")]
+    f[["nodes"]] <- f[["nodes"]][, c("id", "assign", "function", "code")]
     n <- add_dot_attributes(f[["nodes"]], f[["edges"]], label_option)
     n <- make_dot_nodes(n, exclude_text)
     e <- make_dot_edges(f[["edges"]])

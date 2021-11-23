@@ -2,22 +2,22 @@
 
 # Identify node labels depending on specified option
 get_dot_label <- function(
-    assign_label, effect_label, node_type, label_option
+    assign_label, function_label, node_type, label_option
 ) {
     assign_label[is.na(assign_label)] <- ""
-    effect_label[is.na(effect_label)] <- ""
+    function_label[is.na(function_label)] <- ""
     if (label_option == "assign") {
         assign_label
-    } else if (label_option == "effect") {
-        effect_label
+    } else if (label_option == "function") {
+        function_label
     } else if (label_option == "auto") {
         ifelse(
-            node_type == "input" | effect_label == "", 
-            assign_label, effect_label
+            node_type == "input" | function_label == "", 
+            assign_label, function_label
         )
     } else {
         # Graphviz "record" shapes use a pipe to divide subsections of a node
-        paste(assign_label, "|", effect_label)
+        paste(assign_label, "|", function_label)
     }
 }
 
@@ -27,23 +27,23 @@ add_dot_attributes <- function(nodes, edges, label_option = "both") {
         stop("The graph has no edges, so there is nothing to see here!", call. = FALSE)
     }
     # prepare dataframe
-    nodes_to_include <- unique(c(edges[["node_id"]], edges[["node_id_dependency"]]))
-    n <- nodes[nodes[["node_id"]] %in% nodes_to_include, ]
-    e <- dplyr::distinct(edges, .data[["node_id"]]) |>
+    nodes_to_include <- unique(c(edges[["id"]], edges[["node_id_dependency"]]))
+    n <- nodes[nodes[["id"]] %in% nodes_to_include, ]
+    e <- dplyr::distinct(edges, .data[["id"]]) |>
         dplyr::mutate(has_dependency = TRUE)
-    x <- dplyr::left_join(n, e, by = "node_id")
+    x <- dplyr::left_join(n, e, by = "id")
     
     # define attributes
     x[["node_type"]] <- ifelse(
         is.na(x[["has_dependency"]]), "input", 
         ifelse(is.na(x[["assign"]]), "terminal", "interim")
     )
-    x[["name"]] <- paste0("n", x[["node_id"]])
+    x[["name"]] <- paste0("n", x[["id"]])
     x[["label"]] <- get_dot_label(
-        x[["assign"]], x[["effect"]], x[["node_type"]], label_option
+        x[["assign"]], x[["function"]], x[["node_type"]], label_option
     )
-    x[["text"]] <- paste0("# Node ", x[["node_id"]], "\n", x[["text"]])
-    x[["text"]] <- gsub('\"', '&quot;', x[["text"]])
+    x[["code"]] <- paste0("# Node ", x[["id"]], "\n", x[["code"]])
+    x[["code"]] <- gsub('\"', '&quot;', x[["code"]])
     x
 }
 
@@ -57,7 +57,7 @@ make_dot_nodes <- function(nodes, exclude_text = FALSE) {
             paste0(x$name, " [label='", x$label, "']", collapse = "\n")
         } else {
             paste0(
-                x$name, " [label='", x$label, "', tooltip='", x$text, "']", 
+                x$name, " [label='", x$label, "', tooltip='", x$code, "']", 
                 collapse = "\n"
             )
         }
@@ -82,7 +82,7 @@ make_dot_nodes <- function(nodes, exclude_text = FALSE) {
 # Make dot code for edges
 make_dot_edges <- function(edges) {
     from <- paste0("n", edges[["node_id_dependency"]])
-    to <- paste0("n", edges[["node_id"]])
+    to <- paste0("n", edges[["id"]])
     e <- paste(from, "->", to)
     paste(e, collapse = " ")
 }

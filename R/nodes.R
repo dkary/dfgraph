@@ -38,17 +38,21 @@ parse_script <- function(path_to_file, ignore_source = NULL, is_sourced = FALSE)
 # Get parsed data detail from expression
 # - x: one element of list of expressions returned by parse_script()
 get_parse_data <- function(x_eval, includeText = TRUE) {
-    utils::getParseData(
+    df <- utils::getParseData(
         # a hack to get a dataframe with just one expression (seems inefficient)
         parse(text = deparse(x_eval)), 
         includeText = includeText
     )
+    if ("text" %in% names(df)) {
+        names(df)[names(df) == "text"] <- "code"
+    }
+    df
 }
 
-# Get the "effect" (i.e., primary function) of a statement (in an expression)
+# Get the "function" (i.e., primary function) of a statement (in an expression)
 # Intended to be called from parse_statement()
 # - x: one element of list of expressions returned by parse_script()
-get_effect <- function(x) {
+get_function <- function(x) {
     if (rlang::is_call(x, c("%>%", "|>"))) {
         as.character(x[[3]][[1]])[1]
     } else if (is.call(x)) {
@@ -58,7 +62,7 @@ get_effect <- function(x) {
     }
 }
 
-# Get assignments, effects, and text of an expression
+# Get assignments, functions, and text of an expression
 # - x: one element of list of expressions returned by parse_script()
 parse_statement <- function(x) {
     out <- get_parse_data(x)
@@ -71,14 +75,14 @@ parse_statement <- function(x) {
         } else {
             out[["assign"]] <- as.character(x[[2]])[1]
         }
-        out[["effect"]] <- get_effect(x[[3]])
+        out[["function"]] <- get_function(x[[3]])
     } else {
-        out[["effect"]] <- get_effect(x)
+        out[["function"]] <- get_function(x)
     }
-    out[out[["parent"]]==0, c("assign", "member", "effect", "text")]
+    out[out[["parent"]]==0, c("assign", "member", "function", "code")]
 }
 
-# Pull node information for a given expression (assignment or effect)
+# Pull node information for a given expression (assignment or function)
 # - x: one element of list of expressions returned by parse_script()
 # - exclude: expressions beginning with these functions will be excluded from output
 # - recurse: expressions beginning with these will lead to recursion
@@ -116,14 +120,14 @@ parse_nodes <- function(exprs) {
     if (!is.data.frame(nodes)) {
         stop("No eligible nodes were found.")
     }
-    nodes[["node_id"]] <- 1:nrow(nodes)
+    nodes[["id"]] <- 1:nrow(nodes)
     # some symbols can't be used in dotfile label attributes
     replace_symbol <- function(pattern, replacement) {
-        gsub(pattern, replacement, nodes[["effect"]])
+        gsub(pattern, replacement, nodes[["function"]])
     }
-    nodes[["effect"]] <- replace_symbol("<-", "assign")
-    nodes[["effect"]] <- replace_symbol("=", "assign")
-    nodes[["effect"]] <- replace_symbol(">", "gt")
-    nodes[["effect"]] <- replace_symbol("<", "lt")
-    nodes[, c("node_id", "expr_id", "assign", "member", "effect", "text")]
+    nodes[["function"]] <- replace_symbol("<-", "assign")
+    nodes[["function"]] <- replace_symbol("=", "assign")
+    nodes[["function"]] <- replace_symbol(">", "gt")
+    nodes[["function"]] <- replace_symbol("<", "lt")
+    nodes[, c("id", "expr_id", "assign", "member", "function", "code")]
 }

@@ -5,7 +5,7 @@
 parse_statement_depends <- function(expr) {
     parse_one <- function(x) {
         df <- get_parse_data(x)
-        unique(df[df[["token"]] %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL"), "text"])
+        unique(df[df[["token"]] %in% c("SYMBOL", "SYMBOL_FUNCTION_CALL"), "code"])
     }
     if (rlang::is_call(expr, c("<-", "="))) {
         expr <- expr[[3]]
@@ -32,7 +32,7 @@ parse_statement_depends <- function(expr) {
         }
         # 4. Trace locals/globals over function statements
         for (i in 1:nrow(n)) {
-            x <- n[i, "text"] |> rlang::parse_expr()
+            x <- n[i, "code"] |> rlang::parse_expr()
             locals <- c(locals, n[i, "assign"])
             depends <- parse_statement_depends(x)
             globals <- c(globals, setdiff(depends, locals))
@@ -44,14 +44,14 @@ parse_statement_depends <- function(expr) {
 # Get dependencies for a single node
 # - node: one row from a row dataframe
 get_node_depends <- function(node) {
-    x <- rlang::parse_expr(node[["text"]])
+    x <- rlang::parse_expr(node[["code"]])
     d <- parse_statement_depends(x)
     if (!is.na(node[["member"]])) {
         # if membership is assigned, then there's also a dependency on itself
         d <- c(d, node[["assign"]])
     }
     if (length(d) > 0) {
-        data.frame(node_id = node[["node_id"]], dependency = d)
+        data.frame("id" = node[["id"]], "dependency" = d)
     }
 }
 
@@ -67,10 +67,10 @@ get_dependencies <- function(nodes) {
         for (j in 1:nrow(d)) {
             n <- nodes[
                 !is.na(nodes[["assign"]])
-                & nodes[["node_id"]] < i 
+                & nodes[["id"]] < i 
                 & nodes[["assign"]] == d[j, "dependency"], ]
             if (nrow(n) > 0) {
-                d[j, "node_id_dependency"] <- max(n[["node_id"]])
+                d[j, "node_id_dependency"] <- max(n[["id"]])
             } else {
                 d[j, "node_id_dependency"] <- NA
             }
@@ -79,7 +79,7 @@ get_dependencies <- function(nodes) {
     }
     depends <- depends[!is.na(depends[["node_id_dependency"]]), ]
     rownames(depends) <- NULL
-    depends[, c("node_id", "node_id_dependency")]
+    depends[, c("id", "node_id_dependency")]
 }
 
 # Cascade dependencies for selected node IDs
@@ -87,37 +87,37 @@ get_dependencies <- function(nodes) {
 cascade_depends <- function(edges, ids) {
     e <- edges
     for (id in ids) {
-        x <- e[e[["node_id"]] == id, ]
+        x <- e[e[["id"]] == id, ]
         names(x) <- c("node_id_dependency", "new")
         e <- merge(e, x, by = "node_id_dependency", all.x = TRUE)
         e[["node_id_dependency"]] <- ifelse(
             is.na(e[["new"]]), e[["node_id_dependency"]], e[["new"]]
         )
         e[["new"]] <- NULL
-        e <- e[order(e[["node_id"]]), c("node_id", "node_id_dependency")]
+        e <- e[order(e[["id"]]), c("id", "node_id_dependency")]
     }
     rownames(e) <- NULL
     dplyr::distinct(e)
 }
 
 # Prune function nodes (from edges dataframe) and optionally additional nodes 
-# Additional nodes are selected based on matching node labels (in assign or effect)
+# Additional nodes are selected based on matching node labels (in assign or function)
 prune_node_edges <- function(edges, nodes, prune_labels = NULL) {
     # We'll always prune function IDs (at least for now)
-    ids <- nodes[nodes[["effect"]] == "function", "node_id"]
+    ids <- nodes[nodes[["function"]] == "function", "id"]
     
     if (!is.null(prune_labels)) {
-        effect_ids <- nodes[
-            !is.na(nodes[["effect"]]) & nodes[["effect"]] %in% prune_labels, "node_id"
+        function_ids <- nodes[
+            !is.na(nodes[["function"]]) & nodes[["function"]] %in% prune_labels, "id"
         ]
         assign_ids <- nodes[
-            !is.na(nodes[["assign"]]) & nodes[["assign"]] %in% prune_labels, "node_id"
+            !is.na(nodes[["assign"]]) & nodes[["assign"]] %in% prune_labels, "id"
         ]
-        ids <- c(ids, assign_ids, effect_ids)
+        ids <- c(ids, assign_ids, function_ids)
     }
     edges <- cascade_depends(edges, ids)
     edges[
-        !edges[["node_id"]] %in% ids
+        !edges[["id"]] %in% ids
         & !edges[["node_id_dependency"]] %in% ids,
     ]
 }

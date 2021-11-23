@@ -108,13 +108,7 @@ parse_expression <- function(
 # - exprs: list of expressions returned by parse_script()
 parse_nodes <- function(exprs) {
     nodes <- lapply(seq_along(exprs), function(i) {
-        x <- parse_expression(exprs[[i]])
-        if (is.data.frame(x)) {
-            if (nrow(x) > 0 ){
-                x[["expr_id"]] <- i
-            }
-        }
-        x
+        parse_expression(exprs[[i]])
     })
     nodes <- do.call(rbind, nodes)
     if (!is.data.frame(nodes)) {
@@ -129,5 +123,5 @@ parse_nodes <- function(exprs) {
     nodes[["function"]] <- replace_symbol("=", "assign")
     nodes[["function"]] <- replace_symbol(">", "gt")
     nodes[["function"]] <- replace_symbol("<", "lt")
-    nodes[, c("id", "expr_id", "assign", "member", "function", "code")]
+    nodes[, c("id", "assign", "member", "function", "code")]
 }

@@ -18,10 +18,6 @@ get_flow_data <- function(
     exprs <- parse_script(path_to_file, ignore_source)
     nodes <- parse_nodes(exprs)
     edges <- get_dependencies(nodes)
-    nodes <- add_node_type(nodes, edges)
-    if (collapse_nodes) {
-        edges <- cascade_depends(edges, nodes[nodes[["type"]] == "mutate", "node_id"])
-    }
     edges <- prune_node_edges(edges, nodes, prune_labels)
     list("nodes" = nodes, "edges" = edges)
 }
@@ -43,12 +39,7 @@ make_dot <- function(
     label_option = "both"
 ) {
     f <- flow_data
-    if (collapse_nodes) {
-        f[["nodes"]] <- collapse_across_nodes(f[["nodes"]], f[["edges"]])
-        f[["edges"]] <-  dplyr::semi_join(f[["edges"]], f[["nodes"]], by = "node_id")
-    } else {
-        f[["nodes"]] <- f[["nodes"]][, c("node_id", "assign", "effect", "text")]
-    }
+    f[["nodes"]] <- f[["nodes"]][, c("node_id", "assign", "effect", "text")]
     n <- add_dot_attributes(f[["nodes"]], f[["edges"]], label_option)
     n <- make_dot_nodes(n, exclude_text)
     e <- make_dot_edges(f[["edges"]])

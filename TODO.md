@@ -11,9 +11,11 @@
 ## Bugs
 
 - [x] Error in if (is.name(f_formals[[i]]) & f_formals[[i]] != "") { :  argument is of length zero
-- [ ] `cannot open connection errors` are vague (i.e., when a source script can't be found)
+- [x] `cannot open connection errors` are vague (i.e., when a source script can't be found)
     + will need to do a bit of a refresher on error handling in R
 - [ ] `Error: syntax error in line 7 near 'answer'`: For the B4W > svy/3-flags.R. It occurs in a `tibble::tribble()` in lines 29 to 47
+- [ ] pipes in R expressions may translate to additional bins (within the node) because the pipe operator is used for binning in Graphviz record shapes (see the CodeTools results-multi.R example script)
+- [ ] but handling of for loops (and probably if/else). See CodeTools results-multi.R example
 
 ## Data Prep
 

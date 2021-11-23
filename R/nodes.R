@@ -1,7 +1,19 @@
 # functions for defining diagram nodes
 
 # Parse an R (or Rmd) file into a list of expressions
-parse_script <- function(path_to_file) {
+parse_script <- function(path_to_file, ignore_source = NULL, is_sourced = FALSE) {
+    if (!file.exists(path_to_file)) {
+        error_message <- paste0("File '", path_to_file, "' does not exist.")
+        if (is_sourced) {
+            error_message <- paste0(
+                error_message, "\nThis file was expected because of a 'source(",  
+                path_to_file, ")' expression.\n",  
+                "You may need to 'setwd()' appropriately before running the function.\n",
+                "Alternatively, set 'ignore_source = ", path_to_file, "'."
+            )
+        }
+        stop(error_message, call. = FALSE)
+    }
     if (tolower(tools::file_ext(path_to_file)) == "rmd") {
         path_to_file <- knitr::purl(
             path_to_file, documentation = 0, output = tempfile(), quiet = TRUE
@@ -14,7 +26,10 @@ parse_script <- function(path_to_file) {
     # - won't account for setwd() (assumes same env used to call parse_script())
     for (x in exprs) {
         if (rlang::is_call(x, "source")) {
-            exprs <- c(parse_script(x[[2]]), exprs)
+            if (x[[2]] %in% ignore_source) {
+                next
+            }
+            exprs <- c(parse_script(x[[2]], is_sourced = TRUE), exprs)
         }
     } 
     exprs

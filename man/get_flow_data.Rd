@@ -4,7 +4,12 @@
 \alias{get_flow_data}
 \title{Extract nodes and edges from R code}
 \usage{
-get_flow_data(path_to_file, collapse_nodes = FALSE, prune_labels = NULL)
+get_flow_data(
+  path_to_file,
+  collapse_nodes = FALSE,
+  prune_labels = NULL,
+  ignore_source = NULL
+)
 }
 \arguments{
 \item{path_to_file}{character: A file path string}
@@ -14,6 +19,9 @@ will be set to their parent "non-mutate" nodes.}
 
 \item{prune_labels}{character: If not NULL, any nodes with labels matching
 those specified will be dropped (although their dependencies will be cascaded).}
+
+\item{ignore_source}{character: If not NULL, any file names matching those
+specified will be ignored in any "source(filename)" within the scripts.}
 }
 \value{
 Returns a list of two dataframes ("nodes" and "edges")

@@ -9,7 +9,8 @@ plot_flow(
   collapse_nodes = FALSE,
   exclude_text = FALSE,
   minimal_label = FALSE,
-  prune_labels = NULL
+  prune_labels = NULL,
+  ignore_source = NULL
 )
 }
 \arguments{
@@ -26,6 +27,9 @@ in node labels.}
 
 \item{prune_labels}{character: If not NULL, any nodes with labels matching
 those specified will be dropped (although their dependencies will be cascaded).}
+
+\item{ignore_source}{character: If not NULL, any file names matching those
+specified will be ignored in any "source(filename)" within the scripts.}
 }
 \value{
 Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}

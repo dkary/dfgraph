@@ -1,36 +1,54 @@
 # functions for defining dot specification
 
-add_dot_attributes <- function(nodes, edges, minimal_label = FALSE) {
+# Identify node labels depending on specified option
+get_dot_label <- function(
+    assign_label, effect_label, node_type, label_option
+) {
+    assign_label[is.na(assign_label)] <- ""
+    effect_label[is.na(effect_label)] <- ""
+    if (label_option == "assign") {
+        assign_label
+    } else if (label_option == "effect") {
+        effect_label
+    } else if (label_option == "auto") {
+        ifelse(
+            node_type == "input" | effect_label == "", 
+            assign_label, effect_label
+        )
+    } else {
+        # Graphviz "record" shapes use a pipe to divide subsections of a node
+        paste(assign_label, "|", effect_label)
+    }
+}
+
+# Add columns necessary for the dot specification to the nodes dataframe
+add_dot_attributes <- function(nodes, edges, label_option = "both") {
     # prepare dataframe
     nodes_to_include <- unique(c(edges[["node_id"]], edges[["node_id_dependency"]]))
     n <- nodes[nodes[["node_id"]] %in% nodes_to_include, ]
     e <- dplyr::distinct(edges, .data[["node_id"]]) |>
         dplyr::mutate(has_dependency = TRUE)
     x <- dplyr::left_join(n, e, by = "node_id")
-    x[["effect"]] <- ifelse(is.na(x[["effect"]]), "", x[["effect"]])
-    x[["assign"]] <- ifelse(is.na(x[["assign"]]), "", x[["assign"]])
     
     # define attributes
-    x[["shape"]] <- ifelse(
+    x[["node_type"]] <- ifelse(
         is.na(x[["has_dependency"]]), "input", 
-        ifelse(x[["assign"]] == "", "terminal", "interim")
+        ifelse(is.na(x[["assign"]]), "terminal", "interim")
     )
     x[["name"]] <- paste0("n", x[["node_id"]])
-    x[["label"]] <- paste(x[["assign"]], "|", x[["effect"]])
-    if (minimal_label) {
-        x[["label"]] <- ifelse(
-            x[["shape"]] == "input" | x[["effect"]] == "", 
-            x[["assign"]], x[["effect"]]
-        )
-    }
+    x[["label"]] <- get_dot_label(
+        x[["assign"]], x[["effect"]], x[["node_type"]], label_option
+    )
     x[["text"]] <- paste0("# Node ", x[["node_id"]], "\n", x[["text"]])
     x[["text"]] <- gsub('\"', '&quot;', x[["text"]])
     x
 }
 
 # Make dot code for nodes
+# Must be run AFTER add_dot_attributes()
+# TODO: probably better to remove the add_dot_attributes() dependency
 make_dot_nodes <- function(nodes, exclude_text = FALSE) {
-    x <- split(nodes, nodes[["shape"]]) # splitting by groups for dot subgraphs
+    x <- split(nodes, nodes[["node_type"]]) # splitting by groups for dot subgraphs
     assemble_attributes <- function(x) {
         if (exclude_text) {
             paste0(x$name, " [label='", x$label, "']", collapse = "\n")

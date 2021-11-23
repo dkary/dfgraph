@@ -33,14 +33,14 @@ get_flow_data <- function(
 #' parent non-mutate nodes.
 #' @param exclude_text logical: If TRUE, code for a node will not be available
 #' on hover
-#' @param minimal_label logical: If TRUE, less information will be displayed
-#' in node labels.
+#' @param label_option character: Either "both" (default), "assign", "effect" or
+#' "auto" (which uses "assign" for input nodes and "effect" for others).
 #'
 #' @return Returns a string in a dotfile-compatible format
 #' @export
 make_dot <- function(
     flow_data, collapse_nodes = FALSE, exclude_text = FALSE, 
-    minimal_label = FALSE
+    label_option = "both"
 ) {
     f <- flow_data
     if (collapse_nodes) {
@@ -49,7 +49,7 @@ make_dot <- function(
     } else {
         f[["nodes"]] <- f[["nodes"]][, c("node_id", "assign", "effect", "text")]
     }
-    n <- add_dot_attributes(f[["nodes"]], f[["edges"]], minimal_label)
+    n <- add_dot_attributes(f[["nodes"]], f[["edges"]], label_option)
     n <- make_dot_nodes(n, exclude_text)
     e <- make_dot_edges(f[["edges"]])
     paste("digraph {", n, e, "}", sep = "\n\n")
@@ -64,9 +64,9 @@ make_dot <- function(
 #' @export
 plot_flow <- function(
     path_to_file, collapse_nodes = FALSE, exclude_text = FALSE,
-    minimal_label = FALSE, prune_labels = NULL, ignore_source = NULL
+    label_option = "both", prune_labels = NULL, ignore_source = NULL
 ) {
     f <- get_flow_data(path_to_file, collapse_nodes, prune_labels, ignore_source)
-    dot <- make_dot(f, collapse_nodes, exclude_text, minimal_label)
+    dot <- make_dot(f, collapse_nodes, exclude_text, label_option)
     DiagrammeR::grViz(dot)
 }

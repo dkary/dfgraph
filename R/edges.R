@@ -102,16 +102,16 @@ cascade_depends <- function(edges, ids) {
 
 # Prune function nodes (from edges dataframe) and optionally additional nodes 
 # Additional nodes are selected based on matching node labels (in assign or effect)
-prune_node_edges <- function(edges, nodes, labels = NULL) {
+prune_node_edges <- function(edges, nodes, prune_labels = NULL) {
     # We'll always prune function IDs (at least for now)
     ids <- nodes[nodes[["type"]] == "function", "node_id"]
     
-    if (!is.null(labels)) {
+    if (!is.null(prune_labels)) {
         effect_ids <- nodes[
-            !is.na(nodes[["effect"]]) & nodes[["effect"]] %in% labels, "node_id"
+            !is.na(nodes[["effect"]]) & nodes[["effect"]] %in% prune_labels, "node_id"
         ]
         assign_ids <- nodes[
-            !is.na(nodes[["assign"]]) & nodes[["assign"]] %in% labels, "node_id"
+            !is.na(nodes[["assign"]]) & nodes[["assign"]] %in% prune_labels, "node_id"
         ]
         ids <- c(ids, assign_ids, effect_ids)
     }

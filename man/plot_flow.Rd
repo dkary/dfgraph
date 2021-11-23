@@ -8,7 +8,7 @@ plot_flow(
   path_to_file,
   collapse_nodes = FALSE,
   exclude_text = FALSE,
-  minimal_label = FALSE,
+  label_option = "both",
   prune_labels = NULL,
   ignore_source = NULL
 )
@@ -22,8 +22,8 @@ will be set to their parent "non-mutate" nodes.}
 \item{exclude_text}{logical: If TRUE, code for a node will not be available
 on hover}
 
-\item{minimal_label}{logical: If TRUE, less information will be displayed
-in node labels.}
+\item{label_option}{character: Either "both" (default), "assign", "effect" or
+"auto" (which uses "assign" for input nodes and "effect" for others).}
 
 \item{prune_labels}{character: If not NULL, any nodes with labels matching
 those specified will be dropped (although their dependencies will be cascaded).}

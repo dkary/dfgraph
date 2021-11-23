@@ -55,6 +55,8 @@ I originally called this *spaghetti* because of the confused criss-crossing of e
 
 ![](img/interact.png)
 
+> Note that the `sitepairs.R` example from the `CodeDepends` package is another candidate for this interact pattern (and `timeseries.R` is a nice example of complexity).
+
 ### Pmap
 
 Another cause of criss-crossing edges in when multiple inputs are used in multiple outputs. It looks awful, but it could be a simple matter of a functional approach (i.e., maybe one input varies to produce different outputs). It may still be a bit of an anti-pattern since the example I used suggests a split-apply-combine strategy would be appropriate (which would eliminate the criss-crossing).

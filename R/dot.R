@@ -23,6 +23,9 @@ get_dot_label <- function(
 
 # Add columns necessary for the dot specification to the nodes dataframe
 add_dot_attributes <- function(nodes, edges, label_option = "both") {
+    if (nrow(edges) == 0) {
+        stop("The graph has no edges, so there is nothing to see here!", call. = FALSE)
+    }
     # prepare dataframe
     nodes_to_include <- unique(c(edges[["node_id"]], edges[["node_id_dependency"]]))
     n <- nodes[nodes[["node_id"]] %in% nodes_to_include, ]

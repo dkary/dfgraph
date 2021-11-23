@@ -113,10 +113,18 @@ parse_nodes <- function(exprs) {
         x
     })
     nodes <- do.call(rbind, nodes)
+    if (!is.data.frame(nodes)) {
+        stop("No eligible nodes were found.")
+    }
     nodes[["node_id"]] <- 1:nrow(nodes)
     # some symbols can't be used in dotfile label attributes
-    nodes[["effect"]] <- gsub("<-", "assign", nodes[["effect"]])
-    nodes[["effect"]] <- gsub("=", "assign", nodes[["effect"]])
+    replace_symbol <- function(pattern, replacement) {
+        gsub(pattern, replacement, nodes[["effect"]])
+    }
+    nodes[["effect"]] <- replace_symbol("<-", "assign")
+    nodes[["effect"]] <- replace_symbol("=", "assign")
+    nodes[["effect"]] <- replace_symbol(">", "gt")
+    nodes[["effect"]] <- replace_symbol("<", "lt")
     nodes[, c("node_id", "expr_id", "assign", "member", "effect", "text")]
 }
 

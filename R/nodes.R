@@ -127,9 +127,7 @@ parse_nodes <- function(exprs) {
 }
 
 # Identify node IDs to be pruned
-# - prunes function nodes by default
-# - optionally prunes other nodes based on matching node labels
-get_pruned_nodes <- function(nodes, prune_labels = NULL, prune_all_functions = FALSE) {
+get_pruned_ids <- function(nodes, prune_labels = NULL, prune_all_functions = FALSE) {
     if (prune_all_functions) {
         ids <- nodes[nodes[["function"]] == "function", "id"]
     } else {

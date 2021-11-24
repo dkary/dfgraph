@@ -10,7 +10,7 @@ plot_flow(
   prune_labels = NULL,
   prune_all_functions = TRUE,
   label_option = "both",
-  exclude_text = FALSE
+  hover_code = TRUE
 )
 }
 \arguments{
@@ -28,8 +28,7 @@ from the plot}
 \item{label_option}{character: Either "both" (default), "assign", "function" or
 "auto" (which uses "assign" for input nodes and "function" for others).}
 
-\item{exclude_text}{logical: If TRUE, code for a node will not be available
-on hover}
+\item{hover_code}{logical: If TRUE, code (for a node) will be displayed on hover}
 }
 \value{
 Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}

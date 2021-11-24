@@ -33,21 +33,23 @@ get_edges <- function(nodes) {
 #' from the plot
 #' @param label_option character: Either "both" (default), "assign", "function" or
 #' "auto" (which uses "assign" for input nodes and "function" for others).
-#' @param exclude_text logical: If TRUE, code for a node will not be available
-#' on hover
+#' @param hover_code logical: If TRUE, code (for a node) will be displayed on hover
 #'
 #' @return Returns a string in a dotfile-compatible format
 #' @export
 make_dot <- function(
-    nodes, edges, prune_labels = NULL, prune_all_functions = TRUE, 
-    label_option = "both", exclude_text = FALSE
+    nodes, edges, 
+    prune_labels = NULL, prune_all_functions = TRUE, 
+    label_option = "both", hover_code = TRUE
 ) {
-    pruned_nodes <- get_pruned_nodes(nodes, prune_labels, prune_all_functions)
-    n <- add_dot_attributes(nodes, edges, pruned_nodes, label_option)
-    e <- prune_node_edges(edges, pruned_nodes)
-    n <- n[n[["id"]] %in% c(e[["to"]], e[["from"]]), ]
-    n <- make_dot_nodes(n, exclude_text)
-    e <- make_dot_edges(e)
+    pruned_ids <- get_pruned_ids(nodes, prune_labels, prune_all_functions)
+    nodes <- add_dot_attributes(nodes, edges, pruned_ids, label_option)
+    edges_pruned <- prune_node_edges(edges, pruned_ids)
+    nodes_pruned <- nodes[
+        nodes[["id"]] %in% c(edges_pruned[["to"]], edges_pruned[["from"]]), 
+    ]
+    n <- make_dot_nodes(nodes_pruned, hover_code)
+    e <- make_dot_edges(edges_pruned)
     paste("digraph {", n, e, "}", sep = "\n\n")
 }
 
@@ -60,14 +62,15 @@ make_dot <- function(
 #' @return Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}
 #' @export
 plot_flow <- function(
-    path_to_file, ignore_source = NULL, prune_labels = NULL,
-    prune_all_functions = TRUE, label_option = "both", exclude_text = FALSE
+    path_to_file, ignore_source = NULL, 
+    prune_labels = NULL, prune_all_functions = TRUE, 
+    label_option = "both", hover_code = TRUE
 ) {
     nodes <- get_nodes(path_to_file, ignore_source)
     edges <- get_edges(nodes)
     dot <- make_dot(
         nodes, edges, prune_labels, prune_all_functions, 
-        label_option, exclude_text
+        label_option, hover_code
     )
     DiagrammeR::grViz(dot)
 }

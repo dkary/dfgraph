@@ -100,21 +100,8 @@ cascade_depends <- function(edges, ids) {
     dplyr::distinct(e)
 }
 
-# Prune function nodes (from edges dataframe) and optionally additional nodes 
-# Additional nodes are selected based on matching node labels (in assign or function)
-prune_node_edges <- function(edges, nodes, prune_labels = NULL) {
-    # We'll always prune function IDs (at least for now)
-    ids <- nodes[nodes[["function"]] == "function", "id"]
-    
-    if (!is.null(prune_labels)) {
-        function_ids <- nodes[
-            !is.na(nodes[["function"]]) & nodes[["function"]] %in% prune_labels, "id"
-        ]
-        assign_ids <- nodes[
-            !is.na(nodes[["assign"]]) & nodes[["assign"]] %in% prune_labels, "id"
-        ]
-        ids <- c(ids, assign_ids, function_ids)
-    }
+# Prune specified nodes from edges
+prune_node_edges <- function(edges, ids) {
     edges <- cascade_depends(edges, ids)
     edges[
         !edges[["to"]] %in% ids

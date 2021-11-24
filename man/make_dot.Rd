@@ -4,12 +4,21 @@
 \alias{make_dot}
 \title{Convert nodes/edges into a dotfile format for dataflow graph}
 \usage{
-make_dot(nodes, edges, label_option = "both", exclude_text = FALSE)
+make_dot(
+  nodes,
+  edges,
+  prune_labels = NULL,
+  label_option = "both",
+  exclude_text = FALSE
+)
 }
 \arguments{
 \item{nodes}{dataframe with one row per diagram node}
 
 \item{edges}{dataframe with on row per diagram edge}
+
+\item{prune_labels}{character: If not NULL, any nodes with labels matching
+those specified will be dropped (although their dependencies will be cascaded).}
 
 \item{label_option}{character: Either "both" (default), "assign", "function" or
 "auto" (which uses "assign" for input nodes and "function" for others).}

@@ -1,6 +1,27 @@
 # functions for defining dot specification
 
+# Determine display type of node
+# For example: input, function, mutate, interim, terminal)
+# To be called from add_dot_attributes()
+add_node_type <- function(nodes, edges) {
+    if (nrow(edges) == 0) {
+        stop("The graph has no edges, so there is nothing to see here!", call. = FALSE)
+    }
+    # prepare dataframe
+    nodes_to_include <- unique(c(edges[["to"]], edges[["from"]]))
+    n <- nodes[nodes[["id"]] %in% nodes_to_include, ]
+    e <- dplyr::distinct(edges, "id" = .data[["to"]]) |>
+        dplyr::mutate(has_dependency = TRUE)
+    x <- dplyr::left_join(n, e, by = "id")
+    x[["node_type"]] <- ifelse(
+        is.na(x[["has_dependency"]]), "input", 
+        ifelse(is.na(x[["assign"]]), "terminal", "interim")
+    )
+    x
+}
+
 # Identify node labels depending on specified option
+# To be called from add_dot_attributes()
 get_dot_label <- function(
     assign_label, member_label, function_label, node_type, label_option
 ) {
@@ -26,22 +47,9 @@ get_dot_label <- function(
 }
 
 # Add columns necessary for the dot specification to the nodes dataframe
-add_dot_attributes <- function(nodes, edges, label_option = "both") {
-    if (nrow(edges) == 0) {
-        stop("The graph has no edges, so there is nothing to see here!", call. = FALSE)
-    }
-    # prepare dataframe
-    nodes_to_include <- unique(c(edges[["to"]], edges[["from"]]))
-    n <- nodes[nodes[["id"]] %in% nodes_to_include, ]
-    e <- dplyr::distinct(edges, "id" = .data[["to"]]) |>
-        dplyr::mutate(has_dependency = TRUE)
-    x <- dplyr::left_join(n, e, by = "id")
-    
-    # define attributes
-    x[["node_type"]] <- ifelse(
-        is.na(x[["has_dependency"]]), "input", 
-        ifelse(is.na(x[["assign"]]), "terminal", "interim")
-    )
+# TODO: seems like this function might be doing too much
+add_dot_attributes <- function(nodes, edges, pruned_nodes, label_option = "both") {
+    x <- add_node_type(nodes, edges)
     x[["name"]] <- paste0("n", x[["id"]])
     x[["label"]] <- get_dot_label(
         x[["assign"]], x[["member"]], x[["function"]], x[["node_type"]], 

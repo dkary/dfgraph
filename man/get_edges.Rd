@@ -4,13 +4,10 @@
 \alias{get_edges}
 \title{Extract edges from nodes}
 \usage{
-get_edges(nodes, prune_labels = NULL)
+get_edges(nodes)
 }
 \arguments{
 \item{nodes}{dataframe returned by \code{\link{get_nodes}}}
-
-\item{prune_labels}{character: If not NULL, any nodes with labels matching
-those specified will be dropped (although their dependencies will be cascaded).}
 }
 \value{
 Returns a dataframe with two columns (to and from) that each hold node IDs

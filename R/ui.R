@@ -16,20 +16,19 @@ get_nodes <- function(path_to_file, ignore_source = NULL) {
 #' Extract edges from nodes
 #'
 #' @param nodes dataframe returned by \code{\link{get_nodes}}
-#' @param prune_labels character: If not NULL, any nodes with labels matching
-#' those specified will be dropped (although their dependencies will be cascaded).
 #'
 #' @return Returns a dataframe with two columns (to and from) that each hold node IDs
 #' @export
-get_edges <- function(nodes, prune_labels = NULL) {
-    edges <- get_depends(nodes)
-    prune_node_edges(edges, nodes, prune_labels)
+get_edges <- function(nodes) {
+    get_depends(nodes)
 }
 
 #' Convert nodes/edges into a dotfile format for dataflow graph
 #'
 #' @param nodes dataframe with one row per diagram node
 #' @param edges dataframe with on row per diagram edge
+#' @param prune_labels character: If not NULL, any nodes with labels matching
+#' those specified will be dropped (although their dependencies will be cascaded).
 #' @param label_option character: Either "both" (default), "assign", "function" or
 #' "auto" (which uses "assign" for input nodes and "function" for others).
 #' @param exclude_text logical: If TRUE, code for a node will not be available
@@ -37,10 +36,16 @@ get_edges <- function(nodes, prune_labels = NULL) {
 #'
 #' @return Returns a string in a dotfile-compatible format
 #' @export
-make_dot <- function(nodes, edges, label_option = "both", exclude_text = FALSE) {
-    n <- add_dot_attributes(nodes, edges, label_option)
+make_dot <- function(
+    nodes, edges, prune_labels = NULL, label_option = "both", 
+    exclude_text = FALSE
+) {
+    pruned_nodes <- get_pruned_nodes(nodes, prune_labels)
+    e <- prune_node_edges(edges, pruned_nodes) # TODO: eventually after add_dot_attributes()
+    n <- add_dot_attributes(nodes, e, pruned_nodes, label_option) |>
+        dplyr::filter(!id %in% pruned_nodes)
     n <- make_dot_nodes(n, exclude_text)
-    e <- make_dot_edges(edges)
+    e <- make_dot_edges(e)
     paste("digraph {", n, e, "}", sep = "\n\n")
 }
 
@@ -57,7 +62,7 @@ plot_flow <- function(
     label_option = "both", exclude_text = FALSE
 ) {
     nodes <- get_nodes(path_to_file, ignore_source)
-    edges <- get_edges(nodes, prune_labels)
-    dot <- make_dot(nodes, edges, label_option, exclude_text)
+    edges <- get_edges(nodes)
+    dot <- make_dot(nodes, edges, prune_labels, label_option, exclude_text)
     DiagrammeR::grViz(dot)
 }

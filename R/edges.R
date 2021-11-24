@@ -118,7 +118,7 @@ prune_node_edges <- function(edges, ids) {
 get_network <- function(node, edges) {
     network <- node
     e <- edges[edges[["to"]] == node, ]
-    if (nrow(e) > 1) {
+    if (nrow(e) > 0) {
         for (i in 1:nrow(e)) {
             if (e[i, "from"] %in% network) {
                 next

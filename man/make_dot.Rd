@@ -8,6 +8,7 @@ make_dot(
   nodes,
   edges,
   prune_labels = NULL,
+  prune_all_functions = TRUE,
   label_option = "both",
   exclude_text = FALSE
 )
@@ -19,6 +20,9 @@ make_dot(
 
 \item{prune_labels}{character: If not NULL, any nodes with labels matching
 those specified will be dropped (although their dependencies will be cascaded).}
+
+\item{prune_all_functions}{logical: If TRUE, assinged functions will be pruned
+from the plot}
 
 \item{label_option}{character: Either "both" (default), "assign", "function" or
 "auto" (which uses "assign" for input nodes and "function" for others).}

@@ -1,23 +1,29 @@
 # functions for defining dot specification
 
 # Determine display type of node
-# For example: input, function, mutate, interim, terminal)
 # To be called from add_dot_attributes()
 add_node_type <- function(nodes, edges) {
     if (nrow(edges) == 0) {
         stop("The graph has no edges, so there is nothing to see here!", call. = FALSE)
     }
-    # prepare dataframe
-    nodes_to_include <- unique(c(edges[["to"]], edges[["from"]]))
-    n <- nodes[nodes[["id"]] %in% nodes_to_include, ]
-    e <- dplyr::distinct(edges, "id" = .data[["to"]]) |>
-        dplyr::mutate(has_dependency = TRUE)
-    x <- dplyr::left_join(n, e, by = "id")
-    x[["node_type"]] <- ifelse(
-        is.na(x[["has_dependency"]]), "input", 
-        ifelse(is.na(x[["assign"]]), "terminal", "interim")
+    function_ids <- nodes[!is.na(nodes[["function"]]) & nodes[["function"]] == "function", "id"]
+    edges_pruned <- prune_node_edges(edges, function_ids)
+    non_mutate_ids <- unique(edges_pruned[duplicated(edges_pruned$to), "to"])
+    mutate_ids <- edges_pruned[!edges_pruned[["to"]] %in% non_mutate_ids, "to"]
+    
+    nodes[["node_type"]] <- ifelse(
+        nodes[["id"]] %in% function_ids, "function",
+        ifelse(
+            is.na(nodes[["assign"]]), "terminal",
+            ifelse(
+                !nodes[["id"]] %in% edges_pruned[["to"]], "input",
+                ifelse(
+                    nodes[["id"]] %in% mutate_ids, "mutate", "assemble"
+                )
+            )
+        )
     )
-    x
+    nodes
 }
 
 # Identify node labels depending on specified option
@@ -84,12 +90,31 @@ make_dot_nodes <- function(nodes, exclude_text = FALSE) {
             "}"
         )
     }
+    colors <- get_color_palette()
     paste(
-        assemble_subgraph(x, "input", "#cce0ff"),
-        assemble_subgraph(x, "interim", "#f9ffe6"),
-        assemble_subgraph(x, "terminal", "#ffcc80"),
+        assemble_subgraph(x, "function", colors[1]),
+        assemble_subgraph(x, "input", colors[2]),
+        assemble_subgraph(x, "mutate", colors[3]),
+        assemble_subgraph(x, "assemble", colors[3]),
+        assemble_subgraph(x, "terminal", colors[4]),
         sep = "\n\n"
     )
+}
+
+# Get 4-color palette depending on choice
+# colors for (1) function (2) input (3) interim (4) terminal
+get_color_palette <- function(use_colorbrewer = FALSE) {
+    if (use_colorbrewer) {
+        # A color-blind safe colorbrewer qualitative palette, but with a higher 
+        # white-level: regular = 71% 41% 77% 40%, lighter = 90% 80% 95% 75%
+        c("#e4f5d6", "#a7d3f1", "#ecf4f9", "#8dde87")
+    } else {
+        # A palette that is more pleasing to my eye, but still has alternating 
+        # shading, so probably not too bad for colorblindness:
+        # 90% 85% 95% 70%
+        c("#ffffcc", "#b3d1ff", "#f9ffe6", "#ffc266")
+        # c("#ffffcc", "#b3d1ff", "#e6f0ff", "#ffc266") # blue in middle?
+    }
 }
 
 # Make dot code for edges

@@ -29,6 +29,8 @@ get_edges <- function(nodes) {
 #' @param edges dataframe with on row per diagram edge
 #' @param prune_labels character: If not NULL, any nodes with labels matching
 #' those specified will be dropped (although their dependencies will be cascaded).
+#' @param prune_all_functions logical: If TRUE, assinged functions will be pruned 
+#' from the plot
 #' @param label_option character: Either "both" (default), "assign", "function" or
 #' "auto" (which uses "assign" for input nodes and "function" for others).
 #' @param exclude_text logical: If TRUE, code for a node will not be available
@@ -37,13 +39,13 @@ get_edges <- function(nodes) {
 #' @return Returns a string in a dotfile-compatible format
 #' @export
 make_dot <- function(
-    nodes, edges, prune_labels = NULL, label_option = "both", 
-    exclude_text = FALSE
+    nodes, edges, prune_labels = NULL, prune_all_functions = TRUE, 
+    label_option = "both", exclude_text = FALSE
 ) {
-    pruned_nodes <- get_pruned_nodes(nodes, prune_labels)
-    e <- prune_node_edges(edges, pruned_nodes) # TODO: eventually after add_dot_attributes()
-    n <- add_dot_attributes(nodes, e, pruned_nodes, label_option) |>
-        dplyr::filter(!id %in% pruned_nodes)
+    pruned_nodes <- get_pruned_nodes(nodes, prune_labels, prune_all_functions)
+    n <- add_dot_attributes(nodes, edges, pruned_nodes, label_option)
+    e <- prune_node_edges(edges, pruned_nodes)
+    n <- n[n[["id"]] %in% c(e[["to"]], e[["from"]]), ]
     n <- make_dot_nodes(n, exclude_text)
     e <- make_dot_edges(e)
     paste("digraph {", n, e, "}", sep = "\n\n")
@@ -59,10 +61,13 @@ make_dot <- function(
 #' @export
 plot_flow <- function(
     path_to_file, ignore_source = NULL, prune_labels = NULL,
-    label_option = "both", exclude_text = FALSE
+    prune_all_functions = TRUE, label_option = "both", exclude_text = FALSE
 ) {
     nodes <- get_nodes(path_to_file, ignore_source)
     edges <- get_edges(nodes)
-    dot <- make_dot(nodes, edges, prune_labels, label_option, exclude_text)
+    dot <- make_dot(
+        nodes, edges, prune_labels, prune_all_functions, 
+        label_option, exclude_text
+    )
     DiagrammeR::grViz(dot)
 }

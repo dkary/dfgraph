@@ -108,3 +108,23 @@ prune_node_edges <- function(edges, ids) {
         & !edges[["from"]] %in% ids,
     ]
 }
+
+# Get chain of dependencies for a specified node
+# Returns a vector of node IDs, with the specified node as the last item
+# This is intended to enable (or prepare for) 2 features:
+# 1. Display all the code that generates a node (without any non-dependencies)
+#    for interactivity in a js plot (e.g., using D3)
+# 2. Pull immediately preceding pruned node code into the hover display for a node
+get_network <- function(node, edges) {
+    network <- node
+    e <- edges[edges[["to"]] == node, ]
+    if (nrow(e) > 1) {
+        for (i in 1:nrow(e)) {
+            if (e[i, "from"] %in% network) {
+                next
+            }
+            network <- c(network, get_network(e[i, "from"], edges))
+        }
+    }
+    sort(network)
+}

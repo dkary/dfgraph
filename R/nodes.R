@@ -127,11 +127,16 @@ parse_nodes <- function(exprs) {
 }
 
 # Identify node IDs to be pruned
-get_pruned_ids <- function(nodes, prune_labels = NULL, prune_all_functions = FALSE) {
+get_pruned_ids <- function(
+    nodes, prune_labels = NULL, 
+    prune_all_functions = FALSE, prune_all_mutates = FALSE
+) {
+    ids <- c()
     if (prune_all_functions) {
-        ids <- nodes[nodes[["function"]] == "function", "id"]
-    } else {
-        ids <- c()
+        ids <- c(ids, nodes[nodes[["function"]] == "function", "id"])
+    }
+    if (prune_all_mutates) {
+        ids <- c(ids, nodes[nodes[["node_type"]] == "mutate", "id"])
     }
     if (!is.null(prune_labels)) {
         function_ids <- nodes[

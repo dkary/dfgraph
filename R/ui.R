@@ -27,6 +27,8 @@ get_edges <- function(nodes) {
 #'
 #' @param nodes dataframe with one row per diagram node
 #' @param edges dataframe with on row per diagram edge
+#' @param focus_node numeric: ID of a node to focus upon. Only the dependencies
+#' of the specified node will be shown.
 #' @param prune_labels character: If not NULL, any nodes with labels matching
 #' those specified will be pruned (i.e., excluded from the plot) although their 
 #' dependencies will be cascaded.
@@ -34,7 +36,7 @@ get_edges <- function(nodes) {
 #' pruned from the plot.
 #' @param prune_all_mutates logical: If TRUE, intermediate mutated nodes (those
 #' with only a self-dependency) will pruned from the plot.
-#' @param label_option character: Either "both" (default), "assign", "function" or
+#' @param label_option character: Either "both", "assign", "function" or
 #' "auto" (which uses "assign" for input nodes and "function" for others).
 #' @param hover_code logical: If TRUE, code (for a node) will be displayed on 
 #' hover. Code for pruned nodes will be displayed as part of the hovered text 
@@ -43,7 +45,7 @@ get_edges <- function(nodes) {
 #' @return Returns a string in a dotfile-compatible format
 #' @export
 make_dot <- function(
-    nodes, edges, 
+    nodes, edges, focus_node = NULL,
     prune_labels = NULL, prune_all_functions = TRUE, prune_all_mutates = FALSE,
     label_option = "both", hover_code = TRUE
 ) {
@@ -51,6 +53,10 @@ make_dot <- function(
     pruned_ids <- get_pruned_ids(
         nodes, prune_labels, prune_all_functions, prune_all_mutates
     )
+    if (!is.null(focus_node)) {
+        ids <- get_network(focus_node, edges)
+        pruned_ids <- c(pruned_ids, setdiff(nodes[["id"]], ids))
+    }
     nodes <- add_dot_attributes(nodes, edges, pruned_ids, label_option)
     edges_pruned <- prune_node_edges(edges, pruned_ids)
     nodes_pruned <- nodes[
@@ -70,14 +76,15 @@ make_dot <- function(
 #' @return Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}
 #' @export
 plot_flow <- function(
-    path_to_file, ignore_source = NULL, 
+    path_to_file, focus_node = NULL,
     prune_labels = NULL, prune_all_functions = TRUE, prune_all_mutates = FALSE,
-    label_option = "both", hover_code = TRUE
+    label_option = "both", hover_code = TRUE, ignore_source = NULL
 ) {
     nodes <- get_nodes(path_to_file, ignore_source)
     edges <- get_edges(nodes)
     dot <- make_dot(
-        nodes, edges, prune_labels, prune_all_functions, prune_all_mutates,
+        nodes, edges, focus_node,
+        prune_labels, prune_all_functions, prune_all_mutates,
         label_option, hover_code
     )
     DiagrammeR::grViz(dot)

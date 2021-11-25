@@ -7,6 +7,7 @@
 make_dot(
   nodes,
   edges,
+  focus_node = NULL,
   prune_labels = NULL,
   prune_all_functions = TRUE,
   prune_all_mutates = FALSE,
@@ -19,6 +20,9 @@ make_dot(
 
 \item{edges}{dataframe with on row per diagram edge}
 
+\item{focus_node}{numeric: ID of a node to focus upon. Only the dependencies
+of the specified node will be shown.}
+
 \item{prune_labels}{character: If not NULL, any nodes with labels matching
 those specified will be pruned (i.e., excluded from the plot) although their
 dependencies will be cascaded.}
@@ -29,7 +33,7 @@ pruned from the plot.}
 \item{prune_all_mutates}{logical: If TRUE, intermediate mutated nodes (those
 with only a self-dependency) will pruned from the plot.}
 
-\item{label_option}{character: Either "both" (default), "assign", "function" or
+\item{label_option}{character: Either "both", "assign", "function" or
 "auto" (which uses "assign" for input nodes and "function" for others).}
 
 \item{hover_code}{logical: If TRUE, code (for a node) will be displayed on

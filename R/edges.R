@@ -96,8 +96,9 @@ cascade_depends <- function(edges, ids) {
         e[["new"]] <- NULL
         e <- e[order(e[["to"]]), c("to", "from")]
     }
+    e <- e[!duplicated(e),]
     rownames(e) <- NULL
-    dplyr::distinct(e)
+    e
 }
 
 # Prune specified nodes from edges

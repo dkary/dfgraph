@@ -1,3 +1,0 @@
-
-#' @importFrom rlang .data
-NULL

@@ -1,5 +1,16 @@
 # functions for defining diagram nodes
 
+# Create a temporary R script (from Rmd) and return it's filepath
+rmd_to_r <- function(path_to_file) {
+    if (!requireNamespace("knitr", quietly = TRUE)) {
+        stop("Package \"knitr\" needed to parse Rmd files. Please install it.",
+             call. = FALSE)
+    }
+    knitr::purl(
+        path_to_file, documentation = 0, output = tempfile(), quiet = TRUE
+    )
+}
+
 # Parse an R (or Rmd) file into a list of expressions
 parse_script <- function(path_to_file, ignore_source = NULL, is_sourced = FALSE) {
     if (!file.exists(path_to_file)) {
@@ -15,9 +26,7 @@ parse_script <- function(path_to_file, ignore_source = NULL, is_sourced = FALSE)
         stop(error_message, call. = FALSE)
     }
     if (tolower(tools::file_ext(path_to_file)) == "rmd") {
-        path_to_file <- knitr::purl(
-            path_to_file, documentation = 0, output = tempfile(), quiet = TRUE
-        )
+        path_to_file <- rmd_to_r(path_to_file)
     }
     exprs <- rlang::parse_exprs(file(path_to_file))
     # recursively pull in any sourced files

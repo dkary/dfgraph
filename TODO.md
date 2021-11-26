@@ -10,6 +10,9 @@
 
 ## Bugs
 
+- [ ] Why am I getting a weird error with the knit button, but it works fine in other contexts:
+    + Error in out[out[["parent"]] == 0, c("assign", "member", "function", "code")] : 
+  incorrect number of dimensions
 - [x] Error in if (is.name(f_formals[[i]]) & f_formals[[i]] != "") { :  argument is of length zero
 - [x] `cannot open connection errors` are vague (i.e., when a source script can't be found)
     + will need to do a bit of a refresher on error handling in R

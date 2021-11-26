@@ -22,7 +22,7 @@ install.packages("remotes")
 remotes::install_github("dkary/dataflow")
 ```
 
-## Usage
+## Basic Usage
 
 Run `dataflow::plot_flow("path_to_R_or_Rmd_file")` from the R console (which leverages the [DiagrammeR](https://github.com/rich-iannone/DiagrammeR) package with a   [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) format under the hood).
 
@@ -35,22 +35,22 @@ dataflow::plot_flow(
 )
 ```
 
-![](ref/img/assemble.png)
+![](ref/img/assemble.svg)
 
-### Customize
+## Customize
 
-Home in on information of interest:
+### Prune Nodes
+
+Some nodes have only one dependency (referred to as "mutates"), and we can collapse these into their parent nodes:
 
 ```r
 dataflow::plot_flow(
-    "testdat/svy-weight.R",
-    prune_all_mutates = TRUE, # exclude nodes with only a self-dependency
-    label_option = "auto", # display either assignment or function contextually
+    "testdat/svy-weight.R", prune_all_mutates = TRUE,
     prune_labels = c("count", "summary", "sapply", "glimpse", "all.equal")
 )
 ```
 
-![](ref/img/assemble-minimal.png)
+![](ref/img/assemble-prune.svg)
 
 ### Focus on one Node
 
@@ -58,10 +58,20 @@ Focus on the network of a specified node (which you can reveal interactively by 
 
 ```r
 dataflow::plot_flow(
-    "testdat/svy-weight.R", focus_node = 20, 
-    prune_all_mutates = TRUE, label_option = "auto"
+    "testdat/svy-weight.R", prune_all_mutates = TRUE, focus_node = 20, 
 )
 ```
 
-![](ref/img/assemble-focus.png)
+![](ref/img/assemble-focus.svg)
 
+### Display more Info
+
+We can also display both assignment and primary function for each node:
+
+```r
+dataflow::plot_flow(
+    "testdat/svy-weight.R", prune_all_mutates = TRUE, focus_node = 20, label_option = "both"
+)
+```
+
+![](ref/img/assemble-both.svg)

@@ -47,7 +47,7 @@ get_edges <- function(nodes) {
 make_dot <- function(
     nodes, edges, focus_node = NULL,
     prune_labels = NULL, prune_all_functions = TRUE, prune_all_mutates = FALSE,
-    label_option = "both", hover_code = TRUE
+    label_option = "auto", hover_code = TRUE
 ) {
     nodes <- add_node_type(nodes, edges)
     pruned_ids <- get_pruned_ids(
@@ -78,7 +78,7 @@ make_dot <- function(
 plot_flow <- function(
     path_to_file, focus_node = NULL,
     prune_labels = NULL, prune_all_functions = TRUE, prune_all_mutates = FALSE,
-    label_option = "both", hover_code = TRUE, ignore_source = NULL
+    label_option = "auto", hover_code = TRUE, ignore_source = NULL
 ) {
     nodes <- get_nodes(path_to_file, ignore_source)
     edges <- get_edges(nodes)

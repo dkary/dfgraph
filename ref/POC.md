@@ -31,7 +31,7 @@ One of the reasons I'm feeling good about the POC is that I discovered some thin
 
 Multiple inputs with one output. This is a natural pattern in data processing and has some nice characteristics (easy to understand, modularize, etc.). The example below doesn't precisely follow that pattern since it has two outputs: a table of computed weights and a survey dataset with the weights applied. However, saving the weights table is a side-effect and the dataset itself is a direct input to the output survey table.
 
-![](img/assemble.png)
+![](img/assemble.svg)
 
 ### Expand
 

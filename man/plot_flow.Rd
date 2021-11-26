@@ -10,7 +10,7 @@ plot_flow(
   prune_labels = NULL,
   prune_all_functions = TRUE,
   prune_all_mutates = FALSE,
-  label_option = "both",
+  label_option = "auto",
   hover_code = TRUE,
   ignore_source = NULL
 )

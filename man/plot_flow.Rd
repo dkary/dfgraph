@@ -11,7 +11,7 @@ plot_flow(
   prune_all_functions = TRUE,
   prune_all_mutates = FALSE,
   label_option = "auto",
-  hover_code = TRUE,
+  hover_code = "node",
   ignore_source = NULL
 )
 }
@@ -34,9 +34,9 @@ with only a self-dependency) will pruned from the plot.}
 \item{label_option}{character: Either "both", "assign", "function" or
 "auto" (which uses "assign" for input nodes and "function" for others).}
 
-\item{hover_code}{logical: If TRUE, code (for a node) will be displayed on
-hover. Code for pruned nodes will be displayed as part of the hovered text
-for their immediate downstream nodes.}
+\item{hover_code}{character: Either "node", "network", or NULL. If "node", code
+for the current node will be displayed on hover, all dependent code for
+"network", and none if NULL.}
 
 \item{ignore_source}{character: If not NULL, any file names matching those
 specified will be ignored in any "source(filename)" within the scripts.}

@@ -30,23 +30,32 @@ add_node_type <- function(nodes, edges) {
 
 # Add a column to nodes that shows what will be displayed on hover
 # To be called from add_dot_attributes()
-add_hover_code <- function(nodes, edges, pruned_ids = NULL) {
+add_hover_code <- function(nodes, edges, pruned_ids = NULL, hover_code = "node") {
     function_ids <- nodes[
         !is.na(nodes[["function"]]) & nodes[["function"]] == "function", "id"
     ]
-    # for each node, we get the relevant node code
-    if (is.null(pruned_ids)) {
+    if (is.null(hover_code)) {
+        x <- paste0("# Node", nodes[["id"]])
+    } else if (is.null(pruned_ids) && hover_code != "network") {
         # In this case every node shows only it's own code
         x <- paste0("# Node ", nodes[["id"]], "\n", nodes[["code"]])
     } else {
-        x <- lapply(1:nrow(nodes), function(node) {
-            ids <- get_network(node, edges, pruned_ids)
-            ids <- setdiff(ids, function_ids) # don't want to display function code
-            codes <- paste0(
-                "# Node ", ids, "\n", nodes[nodes[["id"]] %in% ids, "code"]
+        x <- sapply(1:nrow(nodes), function(node) {
+            if (hover_code == "node") {
+                ids <- get_network(node, edges, pruned_ids)
+                ids <- setdiff(ids, function_ids) # don't want to display function code
+            } else {
+                ids <- get_network(node, edges)
+            }
+            ids <- sort(ids)
+            counter <- 1:length(ids)
+            comments <- ifelse(
+                counter == 1 & length(counter) > 1, "# Previous Nodes\n", 
+                ifelse(counter == length(ids), paste("\n# Node", ids, "\n"), "")
             )
+            codes <- paste0(comments, nodes[nodes[["id"]] %in% ids, "code"])
             paste(codes, collapse = "\n")
-        }) |> unlist()
+        })
     }
     nodes[["hover"]] <- gsub('\"', '&quot;', x)
     nodes
@@ -79,8 +88,10 @@ get_dot_label <- function(
 }
 
 # Add columns necessary for the dot specification to the nodes dataframe
-add_dot_attributes <- function(nodes, edges, pruned_ids, label_option = "auto") {
-    x <- add_hover_code(nodes, edges, pruned_ids)
+add_dot_attributes <- function(
+    nodes, edges, pruned_ids, label_option = "auto", hover_code
+) {
+    x <- add_hover_code(nodes, edges, pruned_ids, hover_code)
     x[["name"]] <- paste0("n", x[["id"]])
     x[["label"]] <- get_dot_label(
         x[["assign"]], x[["member"]], x[["function"]], x[["node_type"]], 
@@ -90,17 +101,13 @@ add_dot_attributes <- function(nodes, edges, pruned_ids, label_option = "auto") 
 }
 
 # Make dot code for nodes
-make_dot_nodes <- function(nodes, hover_code = TRUE) {
+make_dot_nodes <- function(nodes) {
     x <- split(nodes, nodes[["node_type"]]) # splitting by groups for dot subgraphs
     assemble_attributes <- function(x) {
-        if (!hover_code) {
-            paste0(x$name, " [label='", x$label, "']", collapse = "\n")
-        } else {
-            paste0(
-                x$name, " [label='", x$label, "', tooltip='", x$hover, "']", 
-                collapse = "\n"
-            )
-        }
+        paste0(
+            x$name, " [label='", x$label, "', tooltip='", x$hover, "']", 
+            collapse = "\n"
+        )
     }
     assemble_subgraph <- function(x, shape, fillcolor) {
         paste0(

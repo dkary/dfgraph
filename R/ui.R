@@ -38,16 +38,16 @@ get_edges <- function(nodes) {
 #' with only a self-dependency) will pruned from the plot.
 #' @param label_option character: Either "both", "assign", "function" or
 #' "auto" (which uses "assign" for input nodes and "function" for others).
-#' @param hover_code logical: If TRUE, code (for a node) will be displayed on 
-#' hover. Code for pruned nodes will be displayed as part of the hovered text 
-#' for their immediate downstream nodes.
+#' @param hover_code character: Either "node", "network", or NULL. If "node", code
+#' for the current node will be displayed on hover, all dependent code for
+#' "network", and none if NULL.
 #'
 #' @return Returns a string in a dotfile-compatible format
 #' @export
 make_dot <- function(
     nodes, edges, focus_node = NULL,
     prune_labels = NULL, prune_all_functions = TRUE, prune_all_mutates = FALSE,
-    label_option = "auto", hover_code = TRUE
+    label_option = "auto", hover_code = "node"
 ) {
     nodes <- add_node_type(nodes, edges)
     pruned_ids <- get_pruned_ids(
@@ -57,12 +57,12 @@ make_dot <- function(
         ids <- get_network(focus_node, edges)
         pruned_ids <- c(pruned_ids, setdiff(nodes[["id"]], ids))
     }
-    nodes <- add_dot_attributes(nodes, edges, pruned_ids, label_option)
+    nodes <- add_dot_attributes(nodes, edges, pruned_ids, label_option, hover_code)
     edges_pruned <- prune_node_edges(edges, pruned_ids)
     nodes_pruned <- nodes[
         nodes[["id"]] %in% c(edges_pruned[["to"]], edges_pruned[["from"]]), 
     ]
-    n <- make_dot_nodes(nodes_pruned, hover_code)
+    n <- make_dot_nodes(nodes_pruned)
     e <- make_dot_edges(edges_pruned)
     paste("digraph {", n, e, "}", sep = "\n\n")
 }
@@ -78,7 +78,7 @@ make_dot <- function(
 plot_flow <- function(
     path_to_file, focus_node = NULL,
     prune_labels = NULL, prune_all_functions = TRUE, prune_all_mutates = FALSE,
-    label_option = "auto", hover_code = TRUE, ignore_source = NULL
+    label_option = "auto", hover_code = "node", ignore_source = NULL
 ) {
     nodes <- get_nodes(path_to_file, ignore_source)
     edges <- get_edges(nodes)

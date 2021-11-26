@@ -136,5 +136,5 @@ get_network <- function(node, edges, pruned_ids = NULL) {
             network <- c(network, get_network(e[i, "from"], edges, pruned_ids))
         }
     }
-    sort(network)
+    sort(unique(network))
 }

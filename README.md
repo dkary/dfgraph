@@ -1,13 +1,15 @@
 
 # dfgraph
 
-Visualize how data flows through an R script to illuminate unfamiliar workflows or guide your works-in-progress. 
+Visualize how data flows through an R script to illuminate unfamiliar workflows and inform your coding decisions. 
+
+Us data scientists don't exactly write beautiful production-quality code. Let's be honest, it's more likely to be bewildering spaghetti code, and if you're like me, you've been fortunate enough to enjoy the exquisite torture of deciphering someone else's "workflow" (or your own for that matter). Why not profit from my past suffering with a tool to navigate this quagmire of noodly computerspeak?
 
 ### Note 
 
 - This package is in a **pre-alpha state** and not yet intended for serious use (although you're welcome to test/experiment). There will likely be major changes in the near future (e.g., to enable interactivity).
 
-- There are certain (I think fundamental) [limitations](#limitations) to parsing dependencies from an R script, although I don't think these are enough to prevent `dfgraph` from being useful.
+- There are certain (probably fundamental) [limitations](#limitations) to parsing dependencies from an R script, although I think `dfgraph` can cover enough of the common patterns to prove useful.
 
 ## Installation
 

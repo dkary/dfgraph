@@ -17,7 +17,7 @@ plot_flow("stirfry.Rmd")
 setwd("..")
 
 # step-by-step version
-nodes <- get_nodes("testdat/svy-weight.R")
-edges <- get_edges(nodes)
-dot <- make_dot(nodes, edges)
+flow <- get_flow("testdat/svy-weight.R")
+flow <- prep_flow(flow)
+dot <- make_dot(flow)
 DiagrammeR::grViz(dot) |> DiagrammeRsvg::export_svg() |> charToRaw() |> rsvg::rsvg_svg("test.svg") 

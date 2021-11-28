@@ -4,41 +4,10 @@
 \alias{make_dot}
 \title{Convert nodes/edges into a dotfile format for dataflow graph}
 \usage{
-make_dot(
-  nodes,
-  edges,
-  focus_node = NULL,
-  prune_labels = NULL,
-  prune_all_functions = TRUE,
-  prune_all_mutates = FALSE,
-  label_option = "auto",
-  hover_code = "node"
-)
+make_dot(flow)
 }
 \arguments{
-\item{nodes}{dataframe with one row per diagram node}
-
-\item{edges}{dataframe with on row per diagram edge}
-
-\item{focus_node}{numeric: ID of a node to focus upon. Only the dependencies
-of the specified node will be shown.}
-
-\item{prune_labels}{character: If not NULL, any nodes with labels matching
-those specified will be pruned (i.e., excluded from the plot) although their
-dependencies will be cascaded.}
-
-\item{prune_all_functions}{logical: If TRUE, assigned function nodes will be
-pruned from the plot.}
-
-\item{prune_all_mutates}{logical: If TRUE, intermediate mutated nodes (those
-with only a self-dependency) will pruned from the plot.}
-
-\item{label_option}{character: Either "both", "assign", "function" or
-"auto" (which uses "assign" for input nodes and "function" for others).}
-
-\item{hover_code}{character: Either "node", "network", or NULL. If "node", code
-for the current node will be displayed on hover, all dependent code for
-"network", and none if NULL.}
+\item{flow}{list of nodes/edges returned by \code{\link{get_flow}}}
 }
 \value{
 Returns a string in a dotfile-compatible format

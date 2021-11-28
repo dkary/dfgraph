@@ -1,5 +1,5 @@
 Package: dfgraph
-Title: Extract Data Flow Graphs from R Code
+Title: Visualize R Code with Data Flow Graphs
 Version: 0.0.0.9000
 Authors@R: 
     person("Dan", "Kary", , "dankary@gmail.com", role = c("aut", "cre"))

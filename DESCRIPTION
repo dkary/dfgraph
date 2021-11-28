@@ -1,4 +1,4 @@
-Package: dataflow
+Package: dfgraph
 Title: Extract Data Flow Graphs from R Code
 Version: 0.0.0.9000
 Authors@R: 
@@ -7,6 +7,8 @@ Description: Gain a high-level understanding of an R (or Rmd) script by
     generating a data flow graph showing dependencies between input data
     and downstream operations.
 License: MIT + file LICENSE
+URL: https://github.com/dkary/dfgraph
+BugReports: https://github.com/dkary/dfgraph/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2

@@ -1,17 +1,13 @@
 
-# dataflow
+# dfgraph
 
 Visualize how data flows through an R script to illuminate unfamiliar workflows or guide your works-in-progress. 
 
-Note: This package is in a **pre-alpha state** and not yet intended for serious use (although you're welcome to test/experiment). There will likely be major changes in the near future (e.g., to enable interactivity).
+### Note 
 
-### Limitations
+- This package is in a **pre-alpha state** and not yet intended for serious use (although you're welcome to test/experiment). There will likely be major changes in the near future (e.g., to enable interactivity).
 
-The most obvious limitation is that code is inherently flexible, and I won't be able to capture all the ways people might program. For example:
-
-- We can misidentify dependencies due to name scoping (e.g., dataframe$column "d" vs. global variable "d") with non-standard evaluation (e.g., in `dplyr`).
-
-However, I suspect that I can capture enough of the common data science coding patterns for the package to nonetheless be useful (more details in [Proof of Concept](ref/POC.md)).
+- There are certain (I think fundamental) [limitations](#limitations) to parsing dependencies from an R script, although I don't think these are enough to prevent `dfgraph` from being useful.
 
 ## Installation
 
@@ -19,16 +15,16 @@ From the R console:
 
 ```r
 install.packages("remotes")
-remotes::install_github("dkary/dataflow")
+remotes::install_github("dkary/dfgraph")
 ```
 
 ## Basic Usage
 
-Run `dataflow::plot_flow("path_to_R_or_Rmd_file")` from the R console (which leverages the [DiagrammeR](https://github.com/rich-iannone/DiagrammeR) package with a   [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) format under the hood).
+Run `dfgraph::plot_flow("path_to_R_or_Rmd_file")` from the R console (which leverages the [DiagrammeR](https://github.com/rich-iannone/DiagrammeR) package with a   [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) format under the hood).
 
 ```r
 # Example
-dataflow::plot_flow(
+dfgraph::plot_flow(
     "testdat/svy-weight.R",
     # exclude diagnostic checks from the plot
     prune_labels = c("count", "summary", "sapply", "glimpse", "all.equal")
@@ -44,7 +40,7 @@ dataflow::plot_flow(
 Some nodes have only one dependency (referred to as "mutates"), and we can collapse these into their parent nodes:
 
 ```r
-dataflow::plot_flow(
+dfgraph::plot_flow(
     "testdat/svy-weight.R", prune_all_mutates = TRUE,
     prune_labels = c("count", "summary", "sapply", "glimpse", "all.equal")
 )
@@ -57,7 +53,7 @@ dataflow::plot_flow(
 Focus on the network of a specified node (which you can reveal interactively by hovering over a node):
 
 ```r
-dataflow::plot_flow(
+dfgraph::plot_flow(
     "testdat/svy-weight.R", prune_all_mutates = TRUE, focus_node = 20, 
 )
 ```
@@ -69,9 +65,17 @@ dataflow::plot_flow(
 We can also display both assignment and primary function for each node:
 
 ```r
-dataflow::plot_flow(
+dfgraph::plot_flow(
     "testdat/svy-weight.R", prune_all_mutates = TRUE, focus_node = 20, label_option = "both"
 )
 ```
 
 ![](ref/img/assemble-both.svg)
+
+## Limitations
+
+The most obvious limitation is that code is inherently flexible, and I won't be able to capture all the ways people might program. For example:
+
+- We can misidentify dependencies due to name scoping (e.g., dataframe$column "d" vs. global variable "d") with non-standard evaluation (e.g., in `dplyr`).
+
+However, I suspect that I can capture enough of the common data science coding patterns for the package to nonetheless be useful (more details in [Proof of Concept](ref/POC.md)).

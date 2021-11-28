@@ -87,11 +87,9 @@ get_dot_label <- function(
     }
 }
 
-# Add columns necessary for the dot specification to the nodes dataframe
-add_dot_attributes <- function(
-    nodes, edges, pruned_ids, label_option = "auto", hover_code
-) {
-    x <- add_hover_code(nodes, edges, pruned_ids, hover_code)
+# Add label column to nodes, which will ultimately be displayed as the node name
+add_dot_label <- function(nodes, label_option = "auto") {
+    x <- nodes
     x[["name"]] <- paste0("n", x[["id"]])
     x[["label"]] <- get_dot_label(
         x[["assign"]], x[["member"]], x[["function"]], x[["node_type"]], 

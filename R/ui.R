@@ -51,9 +51,9 @@ prep_flow <- function(
         pruned_ids <- c(pruned_ids, setdiff(flow[["nodes"]][["id"]], ids))
     }
     # 2. add node attributes (label, tooltip)
-    nodes <- add_dot_attributes(
-        flow[["nodes"]], flow[["edges"]], pruned_ids, label_option, hover_code
-    )
+    nodes <- add_dot_label(flow[["nodes"]], label_option)
+    nodes <- add_hover_code(nodes, flow[["edges"]], pruned_ids, hover_code )
+    
     # 3. prune nodes/edges
     edges_pruned <- prune_node_edges(flow[["edges"]], pruned_ids)
     nodes_pruned <- nodes[

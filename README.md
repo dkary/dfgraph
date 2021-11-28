@@ -68,7 +68,8 @@ We can also display both assignment and primary function for each node:
 
 ```r
 dfgraph::plot_flow(
-    "testdat/svy-weight.R", prune_all_mutates = TRUE, focus_node = 20, label_option = "both"
+    "testdat/svy-weight.R", prune_all_mutates = TRUE, focus_node = 20, 
+    label_option = "both"
 )
 ```
 

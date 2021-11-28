@@ -5,11 +5,19 @@ Visualize how data flows through an R script to illuminate unfamiliar workflows 
 
 We data scientists don't exactly write beautiful production-quality code. Let's be honest, it's more likely to be bewildering spaghetti code, and if you're like me, you've gotten to enjoy the exquisite torture of deciphering someone else's "workflow" (or your own for that matter). Why not profit from my past suffering with a tool to help navigate this quagmire of noodly computerspeak?
 
+### Features
+
+- Parse and visualize a dependency graph for R expressions (as nodes) within an R or Rmd script (recursively parsing any `source` files included therein).
+
+- Selectively prune (i.e., exclude) nodes from the visual while propagating their dependencies (including any global dependencies of assigned functions).
+
+- Optionally focus only on the network of dependencies for a specified node.
+
+- Display R code for an expression (node) on hover, optionally including all preceeding code which the selected expression depends upon.
+
 ### Note 
 
-- This package is in a **pre-alpha state** and not yet intended for serious use (although you're welcome to test/experiment). There will likely be major changes in the near future (e.g., to enable interactivity).
-
-- There are certain (probably fundamental) [limitations](#limitations) to parsing dependencies from an R script, although I think `dfgraph` can cover enough of the common patterns to prove useful.
+This package is in a **pre-alpha state** and not yet intended for serious use (although you're welcome to test/experiment). There will likely be major changes in the near future (e.g., to enable interactivity). There are also certain (probably fundamental) [limitations](#limitations) to parsing dependencies from an R script, although I think `dfgraph` can cover enough of the common patterns to prove useful.
 
 ## Installation
 
@@ -37,7 +45,7 @@ dfgraph::plot_flow(
 
 ## Customize
 
-### Prune Nodes
+### Prune Mutate Nodes
 
 Some nodes have only one dependency (referred to as "mutates"), and we can collapse these into their parent nodes:
 

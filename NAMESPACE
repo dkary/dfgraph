@@ -2,5 +2,6 @@
 
 export(get_flow)
 export(make_dot)
+export(parameterize_flow)
 export(plot_flow)
-export(prep_flow)
+export(prune_flow)

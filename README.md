@@ -51,7 +51,7 @@ Some nodes have only one dependency (referred to as "mutates"), and we can colla
 
 ```r
 dfgraph::plot_flow(
-    "testdat/svy-weight.R", prune_all_mutates = TRUE,
+    "testdat/svy-weight.R", prune_types = c("function", "mutate"),
     prune_labels = c("count", "summary", "sapply", "glimpse", "all.equal")
 )
 ```
@@ -64,7 +64,7 @@ Focus on the network of a specified node (which you can reveal interactively by 
 
 ```r
 dfgraph::plot_flow(
-    "testdat/svy-weight.R", prune_all_mutates = TRUE, focus_node = 20, 
+    "testdat/svy-weight.R", prune_types = c("function", "mutate"), focus_node = 20, 
 )
 ```
 
@@ -76,7 +76,7 @@ We can also display both assignment and primary function for each node:
 
 ```r
 dfgraph::plot_flow(
-    "testdat/svy-weight.R", prune_all_mutates = TRUE, focus_node = 20, 
+    "testdat/svy-weight.R", prune_types = c("function", "mutate"), focus_node = 20, 
     label_option = "both"
 )
 ```

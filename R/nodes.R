@@ -135,26 +135,25 @@ parse_nodes <- function(exprs) {
     nodes[, c("id", "assign", "member", "function", "code")]
 }
 
-# Identify node IDs to be pruned
-get_pruned_ids <- function(
-    nodes, prune_labels = NULL, 
-    prune_all_functions = FALSE, prune_all_mutates = FALSE
-) {
-    ids <- c()
-    if (prune_all_functions) {
-        ids <- c(ids, nodes[nodes[["function"]] == "function", "id"])
+# Identify node IDs to prune (based on "node_type")
+get_pruned_types <- function(nodes, prune_types) {
+    if (is.null(prune_types)) {
+        return(NULL)
     }
-    if (prune_all_mutates) {
-        ids <- c(ids, nodes[nodes[["node_type"]] == "mutate", "id"])
+    nodes[nodes[["node_type"]] %in% prune_types, "id"]
+}
+
+# Identify node IDs to prune (based on the node label)
+# Either "assign" or "function" can be used as a label, so they are both checked
+get_pruned_labels <- function(nodes, prune_labels) {
+    if (is.null(prune_labels)) {
+        return(NULL)
     }
-    if (!is.null(prune_labels)) {
-        function_ids <- nodes[
-            !is.na(nodes[["function"]]) & nodes[["function"]] %in% prune_labels, "id"
-        ]
-        assign_ids <- nodes[
-            !is.na(nodes[["assign"]]) & nodes[["assign"]] %in% prune_labels, "id"
-        ]
-        ids <- c(ids, assign_ids, function_ids)
-    }
-    ids
+    function_ids <- nodes[
+        !is.na(nodes[["function"]]) & nodes[["function"]] %in% prune_labels, "id"
+    ]
+    assign_ids <- nodes[
+        !is.na(nodes[["assign"]]) & nodes[["assign"]] %in% prune_labels, "id"
+    ]
+    unique(c(assign_ids, function_ids))
 }

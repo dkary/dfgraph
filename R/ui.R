@@ -14,21 +14,42 @@ get_flow <- function(path_to_file, ignore_source = NULL) {
     nodes <- parse_nodes(exprs)
     edges <- get_depends(nodes)
     nodes <- add_node_type(nodes, edges)
+    rownames(nodes) <- NULL
     list("nodes" = nodes, "edges" = edges)
 }
 
-#' Prepare flow (nodes, edges) for graphing
-#'
+#' Identify nodes to prune
 #' @param flow list of nodes/edges returned by \code{\link{get_flow}}
 #' @param focus_node numeric: ID of a node to focus upon. Only the dependencies
 #' of the specified node will be shown.
 #' @param prune_labels character: If not NULL, any nodes with labels matching
 #' those specified will be pruned (i.e., excluded from the plot) although their 
 #' dependencies will be cascaded.
-#' @param prune_all_functions logical: If TRUE, assigned function nodes will be 
-#' pruned from the plot.
-#' @param prune_all_mutates logical: If TRUE, intermediate mutated nodes (those
-#' with only a self-dependency) will pruned from the plot.
+#' @param prune_types character: Optionally prune nodes based on type (typically
+#' "function" and/or "mutate"). Use NULL to override the default of "function".
+#'
+#' @return Returns list of nodes/edges and (optionally) pruned_ids
+#' @export
+prune_flow <- function(
+    flow, focus_node = NULL, prune_labels = NULL, prune_types = "function"
+) {
+    pruned_ids <- c(
+        get_pruned_types(flow[["nodes"]], prune_types),
+        get_pruned_labels(flow[["nodes"]], prune_labels)
+    )
+    if (!is.null(focus_node)) {
+        ids <- get_network(focus_node, flow[["edges"]])
+        pruned_ids <- c(pruned_ids, setdiff(flow[["nodes"]][["id"]], ids))
+    }
+    if (!all(is.na(pruned_ids))) {
+        flow[["pruned_ids"]] <- pruned_ids
+    }
+    flow
+}
+
+#' Prepare flow (nodes, edges) for graphing
+#'
+#' @inheritParams prune_flow
 #' @param label_option character: Either "both", "assign", "function" or
 #' "auto" (which uses "assign" for input nodes and "function" for others).
 #' @param hover_code character: Either "node", "network", or NULL. If "node", code
@@ -37,34 +58,24 @@ get_flow <- function(path_to_file, ignore_source = NULL) {
 #'
 #' @return Returns a modified list of nodes/edges
 #' @export
-prep_flow <- function(
-    flow, focus_node = NULL,
-    prune_labels = NULL, prune_all_functions = TRUE, prune_all_mutates = FALSE,
-    label_option = "auto", hover_code = "node"
-) {
-    # 1. identify prune IDs
-    pruned_ids <- get_pruned_ids(
-        flow[["nodes"]], prune_labels, prune_all_functions, prune_all_mutates
-    )
-    if (!is.null(focus_node)) {
-        ids <- get_network(focus_node, flow[["edges"]])
-        pruned_ids <- c(pruned_ids, setdiff(flow[["nodes"]][["id"]], ids))
-    }
-    # 2. add node attributes (label, tooltip)
-    nodes <- add_dot_label(flow[["nodes"]], label_option)
-    nodes <- add_hover_code(nodes, flow[["edges"]], pruned_ids, hover_code )
+parameterize_flow <- function(flow, label_option = "auto", hover_code = "node") {
+    nodes <- add_node_label(flow[["nodes"]], label_option)
+    nodes <- add_node_color(nodes)
+    nodes <- add_node_hover(nodes, flow[["edges"]], flow[["pruned_ids"]], hover_code)
     
-    # 3. prune nodes/edges
-    edges_pruned <- prune_node_edges(flow[["edges"]], pruned_ids)
-    nodes_pruned <- nodes[
-        nodes[["id"]] %in% c(edges_pruned[["to"]], edges_pruned[["from"]]), 
-    ]
-    list("nodes" = nodes_pruned, "edges" = edges_pruned)
+    if (!is.null(flow[["pruned_ids"]])) {
+        flow[["edges"]] <- prune_node_edges(flow[["edges"]], flow[["pruned_ids"]])
+        nodes <- nodes[
+            nodes[["id"]] %in% c(flow[["edges"]][["to"]], flow[["edges"]][["from"]]), 
+        ]
+    }
+    flow[["nodes"]] <- nodes
+    flow
 }
 
 #' Convert nodes/edges into a dotfile format for dataflow graph
 #'
-#' @inheritParams prep_flow
+#' @inheritParams prune_flow
 #'
 #' @return Returns a string in a dotfile-compatible format
 #' @export
@@ -77,13 +88,19 @@ make_dot <- function(flow) {
 #' Plot dataflow graph from R code
 #'
 #' @inheritParams get_flow
+<<<<<<< HEAD
 #' @inheritParams prep_flow
 #' @param interactive logical: If TRUE, will use \code{\link[visNetwork]{visNetwork}}
 #' for interactivity, otherwise \code{\link[DiagrammeR]{grViz}}
+=======
+#' @inheritParams prune_flow
+#' @inheritParams parameterize_flow
+>>>>>>> main
 #'
 #' @return Returns a rendered data flow graph
 #' @export
 plot_flow <- function(
+<<<<<<< HEAD
     path_to_file, focus_node = NULL, interactive = TRUE,
     prune_labels = NULL, prune_all_functions = TRUE, prune_all_mutates = FALSE,
     label_option = "auto", hover_code = "node", ignore_source = NULL
@@ -99,4 +116,15 @@ plot_flow <- function(
     } else {
         make_dot(flow) |> DiagrammeR::grViz()
     }
+=======
+    path_to_file, ignore_source = NULL,
+    focus_node = NULL, prune_labels = NULL, prune_types = "function",
+    label_option = "auto", hover_code = "node"
+) {
+    flow <- get_flow(path_to_file, ignore_source)
+    flow <- prune_flow(flow, focus_node, prune_labels, prune_types)
+    flow <- parameterize_flow(flow, label_option, hover_code)
+    dot <- make_dot(flow)
+    DiagrammeR::grViz(dot)
+>>>>>>> main
 }

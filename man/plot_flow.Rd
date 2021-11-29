@@ -6,18 +6,20 @@
 \usage{
 plot_flow(
   path_to_file,
+  ignore_source = NULL,
   focus_node = NULL,
   interactive = TRUE,
   prune_labels = NULL,
-  prune_all_functions = TRUE,
-  prune_all_mutates = FALSE,
+  prune_types = "function",
   label_option = "auto",
-  hover_code = "node",
-  ignore_source = NULL
+  hover_code = "node"
 )
 }
 \arguments{
 \item{path_to_file}{character: A file path string}
+
+\item{ignore_source}{character: If not NULL, any file names matching those
+specified will be ignored in any "source(filename)" within the scripts.}
 
 \item{focus_node}{numeric: ID of a node to focus upon. Only the dependencies
 of the specified node will be shown.}
@@ -29,11 +31,8 @@ for interactivity, otherwise \code{\link[DiagrammeR]{grViz}}}
 those specified will be pruned (i.e., excluded from the plot) although their
 dependencies will be cascaded.}
 
-\item{prune_all_functions}{logical: If TRUE, assigned function nodes will be
-pruned from the plot.}
-
-\item{prune_all_mutates}{logical: If TRUE, intermediate mutated nodes (those
-with only a self-dependency) will pruned from the plot.}
+\item{prune_types}{character: Optionally prune nodes based on type (typically
+"function" and/or "mutate"). Use NULL to override the default of "function".}
 
 \item{label_option}{character: Either "both", "assign", "function" or
 "auto" (which uses "assign" for input nodes and "function" for others).}
@@ -41,9 +40,6 @@ with only a self-dependency) will pruned from the plot.}
 \item{hover_code}{character: Either "node", "network", or NULL. If "node", code
 for the current node will be displayed on hover, all dependent code for
 "network", and none if NULL.}
-
-\item{ignore_source}{character: If not NULL, any file names matching those
-specified will be ignored in any "source(filename)" within the scripts.}
 }
 \value{
 Returns a rendered data flow graph

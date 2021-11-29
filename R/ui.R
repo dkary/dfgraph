@@ -65,10 +65,11 @@ parameterize_flow <- function(flow, label_option = "auto", hover_code = "node") 
     
     if (!is.null(flow[["pruned_ids"]])) {
         flow[["edges"]] <- prune_node_edges(flow[["edges"]], flow[["pruned_ids"]])
-        nodes <- nodes[
-            nodes[["id"]] %in% c(flow[["edges"]][["to"]], flow[["edges"]][["from"]]), 
-        ]
     }
+    # nodes without edges will always be dropped
+    nodes <- nodes[
+        nodes[["id"]] %in% c(flow[["edges"]][["to"]], flow[["edges"]][["from"]]), 
+    ]
     flow[["nodes"]] <- nodes
     flow
 }
@@ -105,7 +106,7 @@ plot_flow <- function(
     flow <- parameterize_flow(flow, label_option, hover_code)
     dot <- make_dot(flow)
     if (interactive) {
-        plot_visjs(flow)
+        prep_visjs(flow) |> plot_visjs()
     } else {
         make_dot(flow) |> DiagrammeR::grViz()
     }

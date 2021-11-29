@@ -17,8 +17,7 @@ get_flow <- function(path_to_file, ignore_source = NULL) {
     list("nodes" = nodes, "edges" = edges)
 }
 
-#' Prepare flow (nodes, edges) for graphing
-#'
+#' Identify nodes to prune
 #' @param flow list of nodes/edges returned by \code{\link{get_flow}}
 #' @param focus_node numeric: ID of a node to focus upon. Only the dependencies
 #' of the specified node will be shown.
@@ -29,6 +28,29 @@ get_flow <- function(path_to_file, ignore_source = NULL) {
 #' pruned from the plot.
 #' @param prune_all_mutates logical: If TRUE, intermediate mutated nodes (those
 #' with only a self-dependency) will pruned from the plot.
+#'
+#' @return Returns list of nodes/edges and (optionally) pruned_ids
+#' @export
+prune_flow <- function(
+    flow, focus_node = NULL, prune_labels = NULL, prune_all_functions = TRUE, 
+    prune_all_mutates = FALSE
+) {
+    pruned_ids <- get_pruned_ids(
+        flow[["nodes"]], prune_labels, prune_all_functions, prune_all_mutates
+    )
+    if (!is.null(focus_node)) {
+        ids <- get_network(focus_node, flow[["edges"]])
+        pruned_ids <- c(pruned_ids, setdiff(flow[["nodes"]][["id"]], ids))
+    }
+    if (!all(is.na(pruned_ids))) {
+        flow[["pruned_ids"]] <- pruned_ids
+    }
+    flow
+}
+
+#' Prepare flow (nodes, edges) for graphing
+#'
+#' @inheritParams prune_flow
 #' @param label_option character: Either "both", "assign", "function" or
 #' "auto" (which uses "assign" for input nodes and "function" for others).
 #' @param hover_code character: Either "node", "network", or NULL. If "node", code
@@ -37,34 +59,23 @@ get_flow <- function(path_to_file, ignore_source = NULL) {
 #'
 #' @return Returns a modified list of nodes/edges
 #' @export
-prep_flow <- function(
-    flow, focus_node = NULL,
-    prune_labels = NULL, prune_all_functions = TRUE, prune_all_mutates = FALSE,
-    label_option = "auto", hover_code = "node"
-) {
-    # 1. identify prune IDs
-    pruned_ids <- get_pruned_ids(
-        flow[["nodes"]], prune_labels, prune_all_functions, prune_all_mutates
-    )
-    if (!is.null(focus_node)) {
-        ids <- get_network(focus_node, flow[["edges"]])
-        pruned_ids <- c(pruned_ids, setdiff(flow[["nodes"]][["id"]], ids))
-    }
-    # 2. add node attributes (label, tooltip)
+parameterize_flow <- function(flow, label_option = "auto", hover_code = "node") {
     nodes <- add_dot_label(flow[["nodes"]], label_option)
-    nodes <- add_hover_code(nodes, flow[["edges"]], pruned_ids, hover_code )
+    nodes <- add_hover_code(nodes, flow[["edges"]], flow[["pruned_ids"]], hover_code )
     
-    # 3. prune nodes/edges
-    edges_pruned <- prune_node_edges(flow[["edges"]], pruned_ids)
-    nodes_pruned <- nodes[
-        nodes[["id"]] %in% c(edges_pruned[["to"]], edges_pruned[["from"]]), 
-    ]
-    list("nodes" = nodes_pruned, "edges" = edges_pruned)
+    if (!is.null(flow[["pruned_ids"]])) {
+        flow[["edges"]] <- prune_node_edges(flow[["edges"]], flow[["pruned_ids"]])
+        nodes <- nodes[
+            nodes[["id"]] %in% c(flow[["edges"]][["to"]], flow[["edges"]][["from"]]), 
+        ]
+    }
+    flow[["nodes"]] <- nodes
+    flow
 }
 
 #' Convert nodes/edges into a dotfile format for dataflow graph
 #'
-#' @inheritParams prep_flow
+#' @inheritParams prune_flow
 #'
 #' @return Returns a string in a dotfile-compatible format
 #' @export
@@ -77,7 +88,8 @@ make_dot <- function(flow) {
 #' Plot dataflow graph from R code
 #'
 #' @inheritParams get_flow
-#' @inheritParams prep_flow
+#' @inheritParams prune_flow
+#' @inheritParams parameterize_flow
 #'
 #' @return Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}
 #' @export
@@ -87,11 +99,9 @@ plot_flow <- function(
     label_option = "auto", hover_code = "node", ignore_source = NULL
 ) {
     flow <- get_flow(path_to_file, ignore_source)
-    flow <- prep_flow(
-        flow, focus_node,
-        prune_labels, prune_all_functions, prune_all_mutates,
-        label_option, hover_code
-    )
+    flow <- prune_flow(flow, focus_node, prune_labels, prune_all_functions, 
+                       prune_all_mutates)
+    flow <- parameterize_flow(flow, label_option, hover_code)
     dot <- make_dot(flow)
     DiagrammeR::grViz(dot)
 }

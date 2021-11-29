@@ -31,7 +31,12 @@ add_node_type <- function(nodes, edges) {
 
 # Add a column to nodes that shows what will be displayed on hover
 # To be called from add_dot_attributes()
-add_hover_code <- function(nodes, edges, pruned_ids = NULL, hover_code = "node") {
+add_node_hover <- function(nodes, edges, pruned_ids = NULL, hover_code = "node") {
+    # NOTE: this function will only work correctly if nodes is sorted by ID
+    # Not great, but seems okay at this stage
+    nodes <- nodes[order(nodes[["id"]]),]
+    rownames(nodes) <- NULL
+    
     function_ids <- nodes[
         !is.na(nodes[["function"]]) & nodes[["function"]] == "function", "id"
     ]
@@ -89,12 +94,39 @@ get_dot_label <- function(
 }
 
 # Add label column to nodes, which will ultimately be displayed as the node name
-add_dot_label <- function(nodes, label_option = "auto") {
+add_node_label <- function(nodes, label_option = "auto") {
     x <- nodes
-    x[["name"]] <- paste0("n", x[["id"]])
     x[["label"]] <- get_dot_label(
         x[["assign"]], x[["member"]], x[["function"]], x[["node_type"]], 
         label_option
     )
+    x
+}
+
+# Define a 4-color palette
+# colors for (1) function (2) input (3) interim (4) terminal
+get_color_palette <- function(use_colorbrewer = FALSE) {
+    if (use_colorbrewer) {
+        # A color-blind safe colorbrewer qualitative palette, but with a higher 
+        # white-level: regular = 71% 41% 77% 40%, lighter = 90% 80% 95% 75%
+        colors <- c("#e4f5d6", "#a7d3f1", "#ecf4f9", "#8dde87")
+    } else {
+        # A palette that is more pleasing to my eye, but still has alternating 
+        # shading, so probably not too bad for colorblindness:
+        # 90% 85% 95% 70%
+        colors <- c("#ffffcc", "#b3d1ff", "#f9ffe6", "#ffc266")
+    }
+    data.frame(
+        "node_type" = c("function", "input", "mutate", "assemble", "terminal"),
+        "color" = c(colors[1:3], colors[3], colors[4])
+    )
+}
+
+# Add a color column to nodes
+add_node_color <- function(nodes) {
+    colors <- get_color_palette()
+    x <- merge(nodes, colors, by = "node_type", all.x = TRUE)
+    x <- x[order(x[["id"]]),]
+    rownames(x) <- NULL
     x
 }

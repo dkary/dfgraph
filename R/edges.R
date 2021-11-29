@@ -78,6 +78,7 @@ get_depends <- function(nodes) {
         depends <- rbind(depends, d)
     }
     depends <- depends[!is.na(depends[["from"]]), ]
+    depends <- depends[!duplicated(depends), ]
     rownames(depends) <- NULL
     depends[, c("to", "from")]
 }

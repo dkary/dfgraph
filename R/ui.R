@@ -14,6 +14,7 @@ get_flow <- function(path_to_file, ignore_source = NULL) {
     nodes <- parse_nodes(exprs)
     edges <- get_depends(nodes)
     nodes <- add_node_type(nodes, edges)
+    rownames(nodes) <- NULL
     list("nodes" = nodes, "edges" = edges)
 }
 
@@ -25,7 +26,7 @@ get_flow <- function(path_to_file, ignore_source = NULL) {
 #' those specified will be pruned (i.e., excluded from the plot) although their 
 #' dependencies will be cascaded.
 #' @param prune_types character: Optionally prune nodes based on type (typically
-#' "function" and/or "mutate". Set to NULL to override the default of "function"
+#' "function" and/or "mutate"). Use NULL to override the default of "function".
 #'
 #' @return Returns list of nodes/edges and (optionally) pruned_ids
 #' @export
@@ -58,8 +59,9 @@ prune_flow <- function(
 #' @return Returns a modified list of nodes/edges
 #' @export
 parameterize_flow <- function(flow, label_option = "auto", hover_code = "node") {
-    nodes <- add_dot_label(flow[["nodes"]], label_option)
-    nodes <- add_hover_code(nodes, flow[["edges"]], flow[["pruned_ids"]], hover_code )
+    nodes <- add_node_label(flow[["nodes"]], label_option)
+    nodes <- add_node_color(nodes)
+    nodes <- add_node_hover(nodes, flow[["edges"]], flow[["pruned_ids"]], hover_code)
     
     if (!is.null(flow[["pruned_ids"]])) {
         flow[["edges"]] <- prune_node_edges(flow[["edges"]], flow[["pruned_ids"]])

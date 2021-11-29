@@ -28,7 +28,7 @@ those specified will be pruned (i.e., excluded from the plot) although their
 dependencies will be cascaded.}
 
 \item{prune_types}{character: Optionally prune nodes based on type (typically
-"function" and/or "mutate". Set to NULL to override the default of "function"}
+"function" and/or "mutate"). Use NULL to override the default of "function".}
 
 \item{label_option}{character: Either "both", "assign", "function" or
 "auto" (which uses "assign" for input nodes and "function" for others).}

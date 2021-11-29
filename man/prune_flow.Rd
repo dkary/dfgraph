@@ -8,8 +8,7 @@ prune_flow(
   flow,
   focus_node = NULL,
   prune_labels = NULL,
-  prune_all_functions = TRUE,
-  prune_all_mutates = FALSE
+  prune_types = "function"
 )
 }
 \arguments{
@@ -22,11 +21,8 @@ of the specified node will be shown.}
 those specified will be pruned (i.e., excluded from the plot) although their
 dependencies will be cascaded.}
 
-\item{prune_all_functions}{logical: If TRUE, assigned function nodes will be
-pruned from the plot.}
-
-\item{prune_all_mutates}{logical: If TRUE, intermediate mutated nodes (those
-with only a self-dependency) will pruned from the plot.}
+\item{prune_types}{character: Optionally prune nodes based on type (typically
+"function" and/or "mutate". Set to NULL to override the default of "function"}
 }
 \value{
 Returns list of nodes/edges and (optionally) pruned_ids

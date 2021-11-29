@@ -79,7 +79,7 @@ get_dot_label <- function(
         function_label
     } else if (label_option == "auto") {
         ifelse(
-            node_type == "input" | function_label == "", 
+            node_type %in% c("input", "function") | function_label == "", 
             assign_label, function_label
         )
     } else {

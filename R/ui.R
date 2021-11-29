@@ -88,36 +88,15 @@ make_dot <- function(flow) {
 #' Plot dataflow graph from R code
 #'
 #' @inheritParams get_flow
-<<<<<<< HEAD
-#' @inheritParams prep_flow
-#' @param interactive logical: If TRUE, will use \code{\link[visNetwork]{visNetwork}}
-#' for interactivity, otherwise \code{\link[DiagrammeR]{grViz}}
-=======
 #' @inheritParams prune_flow
 #' @inheritParams parameterize_flow
->>>>>>> main
+#' @param interactive logical: If TRUE, will use \code{\link[visNetwork]{visNetwork}}
+#' for interactivity, otherwise \code{\link[DiagrammeR]{grViz}}
 #'
 #' @return Returns a rendered data flow graph
 #' @export
 plot_flow <- function(
-<<<<<<< HEAD
-    path_to_file, focus_node = NULL, interactive = TRUE,
-    prune_labels = NULL, prune_all_functions = TRUE, prune_all_mutates = FALSE,
-    label_option = "auto", hover_code = "node", ignore_source = NULL
-) {
-    flow <- get_flow(path_to_file, ignore_source)
-    flow <- prep_flow(
-        flow, focus_node,
-        prune_labels, prune_all_functions, prune_all_mutates,
-        label_option, hover_code
-    )
-    if (interactive) {
-        plot_visjs(flow)
-    } else {
-        make_dot(flow) |> DiagrammeR::grViz()
-    }
-=======
-    path_to_file, ignore_source = NULL,
+    path_to_file, ignore_source = NULL, interactive = TRUE,
     focus_node = NULL, prune_labels = NULL, prune_types = "function",
     label_option = "auto", hover_code = "node"
 ) {
@@ -125,6 +104,9 @@ plot_flow <- function(
     flow <- prune_flow(flow, focus_node, prune_labels, prune_types)
     flow <- parameterize_flow(flow, label_option, hover_code)
     dot <- make_dot(flow)
-    DiagrammeR::grViz(dot)
->>>>>>> main
+    if (interactive) {
+        plot_visjs(flow)
+    } else {
+        make_dot(flow) |> DiagrammeR::grViz()
+    }
 }

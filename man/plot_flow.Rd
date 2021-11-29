@@ -7,8 +7,8 @@
 plot_flow(
   path_to_file,
   ignore_source = NULL,
-  focus_node = NULL,
   interactive = TRUE,
+  focus_node = NULL,
   prune_labels = NULL,
   prune_types = "function",
   label_option = "auto",
@@ -21,11 +21,11 @@ plot_flow(
 \item{ignore_source}{character: If not NULL, any file names matching those
 specified will be ignored in any "source(filename)" within the scripts.}
 
-\item{focus_node}{numeric: ID of a node to focus upon. Only the dependencies
-of the specified node will be shown.}
-
 \item{interactive}{logical: If TRUE, will use \code{\link[visNetwork]{visNetwork}}
 for interactivity, otherwise \code{\link[DiagrammeR]{grViz}}}
+
+\item{focus_node}{numeric: ID of a node to focus upon. Only the dependencies
+of the specified node will be shown.}
 
 \item{prune_labels}{character: If not NULL, any nodes with labels matching
 those specified will be pruned (i.e., excluded from the plot) although their

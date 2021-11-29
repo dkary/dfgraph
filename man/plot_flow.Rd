@@ -7,6 +7,7 @@
 plot_flow(
   path_to_file,
   focus_node = NULL,
+  interactive = TRUE,
   prune_labels = NULL,
   prune_all_functions = TRUE,
   prune_all_mutates = FALSE,
@@ -20,6 +21,9 @@ plot_flow(
 
 \item{focus_node}{numeric: ID of a node to focus upon. Only the dependencies
 of the specified node will be shown.}
+
+\item{interactive}{logical: If TRUE, will use \code{\link[visNetwork]{visNetwork}}
+for interactivity, otherwise \code{\link[DiagrammeR]{grViz}}}
 
 \item{prune_labels}{character: If not NULL, any nodes with labels matching
 those specified will be pruned (i.e., excluded from the plot) although their
@@ -42,7 +46,7 @@ for the current node will be displayed on hover, all dependent code for
 specified will be ignored in any "source(filename)" within the scripts.}
 }
 \value{
-Returns a data flow diagram rendered by \code{\link[DiagrammeR]{grViz}}
+Returns a rendered data flow graph
 }
 \description{
 Plot dataflow graph from R code

@@ -1,11 +1,4 @@
-
-# TODO: Planning
-# What do you really want from the interactivity?
-# Probably the quickest way to get there is with Shiny, worth prototyping there at least
-# - moving the plot_flow() arguments to interactive Shiny session
-# - How important are the outstanding features?
-#   + nice scrollable display of network of code (might be easier in Shiny)
-#   + interactive node collapsing/highlighting
+# functions for plotting using vis.js
 
 # Do some preparation for getting the format for visNetwork()
 prep_visjs <- function(flow) {
@@ -19,14 +12,7 @@ prep_visjs <- function(flow) {
     list("nodes" = nodes, "edges" = edges)
 }
 
-# TODO:
-# - probably make the border color darker, likely with visGroups defined
-# - having a hard time avoiding edge crossing, maybe igraph layout?
-# - figure out newline required by vis.js (\n doesn't work), probably html is needed
-# TODO Features
-# - highlight whole network
-# - interactively edit (node pruning, etc.)
-# - node clustering
+# Plot the flow using the visNetwork package
 plot_visjs <- function(flow) {
     visNetwork::visNetwork(nodes = flow[["nodes"]], edges = flow[["edges"]]) |>
         visNetwork::visOptions(

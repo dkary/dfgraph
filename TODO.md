@@ -4,9 +4,26 @@
 - [x] propagate function global dependencies
 - [x] set up R package structure (and roxygen docs)
 - [x] proof of concept
+- [ ] if/else node handling
 - [ ] interactivity and corresponding POC
 - [ ] vignette and/or links to blog posts
 - [ ] testing
+
+## Interactivity
+
+What do you really want from the interactivity?  Probably the quickest way to get there is with Shiny, worth prototyping there at least
+
+- moving the plot_flow() arguments to interactive Shiny session
+- How important are the outstanding features?
+  + nice scrollable display of network of code (might be easier in Shiny)
+  + interactive node collapsing/highlighting
+  + interactive editing (less a priority than Shiny menus I think)
+
+### Appearance
+  
+- probably make the border color darker, likely with visGroups defined
+- having a hard time avoiding edge crossing, maybe igraph layout?
+- figure out newline required by vis.js (\n doesn't work), probably html is needed
 
 ## Bugs
 

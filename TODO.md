@@ -4,10 +4,23 @@
 - [x] propagate function global dependencies
 - [x] set up R package structure (and roxygen docs)
 - [x] proof of concept
-- [ ] if/else node handling
-- [ ] interactivity and corresponding POC
+- [ ] [if/else](#ifelse) node handling
+- [ ] [interactivity](#interactivity) and corresponding POC 
 - [ ] vignette and/or links to blog posts
 - [ ] testing
+
+## Bugs
+
+- [ ] Why am I getting a weird error with the knit button, but it works fine in other contexts:
+    + Error in out[out[["parent"]] == 0, c("assign", "member", "function", "code")] : 
+  incorrect number of dimensions
+- [ ] eventually will want to ensure the display of network code won't get truncated (i.e., if it's worth displaying, will want to display it in a readable way with scrolling).
+- [x] Error in if (is.name(f_formals[[i]]) & f_formals[[i]] != "") { :  argument is of length zero
+- [x] `cannot open connection errors` are vague (i.e., when a source script can't be found)
+    + will need to do a bit of a refresher on error handling in R
+- [ ] `Error: syntax error in line 7 near 'answer'`: For the B4W > svy/3-flags.R. It occurs in a `tibble::tribble()` in lines 29 to 47
+- [ ] pipes in R expressions may translate to additional bins (within the node) because the pipe operator is used for binning in Graphviz record shapes (see the CodeTools results-multi.R example script)
+- [ ] but handling of for loops (and probably if/else). See CodeTools results-multi.R example
 
 ## Interactivity
 
@@ -25,18 +38,54 @@ What do you really want from the interactivity?  Probably the quickest way to ge
 - having a hard time avoiding edge crossing, maybe igraph layout?
 - figure out newline required by vis.js (\n doesn't work), probably html is needed
 
-## Bugs
+## Ifelse
 
-- [ ] Why am I getting a weird error with the knit button, but it works fine in other contexts:
-    + Error in out[out[["parent"]] == 0, c("assign", "member", "function", "code")] : 
-  incorrect number of dimensions
-- [ ] eventually will want to ensure the display of network code won't get truncated (i.e., if it's worth displaying, will want to display it in a readable way with scrolling).
-- [x] Error in if (is.name(f_formals[[i]]) & f_formals[[i]] != "") { :  argument is of length zero
-- [x] `cannot open connection errors` are vague (i.e., when a source script can't be found)
-    + will need to do a bit of a refresher on error handling in R
-- [ ] `Error: syntax error in line 7 near 'answer'`: For the B4W > svy/3-flags.R. It occurs in a `tibble::tribble()` in lines 29 to 47
-- [ ] pipes in R expressions may translate to additional bins (within the node) because the pipe operator is used for binning in Graphviz record shapes (see the CodeTools results-multi.R example script)
-- [ ] but handling of for loops (and probably if/else). See CodeTools results-multi.R example
+I think the most straightforward way to deal with if/else is the Schrodinger's cat approach. Treat assignments in conditional states as a single entity:
+
+```r
+# Expression 1
+a <- "..." 
+# Expression 2
+if (...) { 
+  b <- f(a)
+  c <- g(b)
+} else {
+  b <- f2(a) 
+  c <- g2(b)
+}
+# Expression 3
+d <- h(b, c)
+```
+
+The above will have 4 nodes: `a -> b -> c -> d`. The code displayed for the b node:
+
+```r
+if (...) {
+  b <- f(a)
+} else {
+  b <- f2(a)
+}
+``` 
+
+### Asymmetry
+
+This isn't going to do a great job of addressing assymetrical effects though, so we would need something more in such cases:
+
+```r
+if (...) {
+  saveRDS(b)
+} else {
+  saveRDS(c)
+}
+```
+
+The above will produce 2 nodes. The code for `b | saveRDS`:
+
+```r
+if (...) {
+  saveRDS(b)
+}
+```
 
 ## Data Prep
 

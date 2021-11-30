@@ -117,24 +117,24 @@ prune_node_edges <- function(edges, ids) {
 # 1. Display all the code that generates a node (without any non-dependencies)
 #    for interactivity in a js plot (e.g., using D3)
 # 2. Pull immediately preceding pruned node code into the hover display for a node
-#    which will occur if pruned_ids not NULL
-get_network <- function(node, edges, pruned_ids = NULL) {
+#    which will occur if prune_ids not NULL
+get_network <- function(node, edges, prune_ids = NULL) {
     network <- node
     e <- edges[edges[["to"]] == node, ]
     if (nrow(e) > 0) {
         for (i in 1:nrow(e)) {
             current_node <- e[i, "from"]
-            if (!is.null(pruned_ids)) {
+            if (!is.null(prune_ids)) {
                 # special mode which stops at the first non-pruned node
                 # for showing hover code with collapsed nodes
-                if (!current_node %in% pruned_ids) {
+                if (!current_node %in% prune_ids) {
                     next
                 }
             } else if (current_node %in% network) {
                 # no need to pull an id we already have
                 next
             }
-            network <- c(network, get_network(e[i, "from"], edges, pruned_ids))
+            network <- c(network, get_network(e[i, "from"], edges, prune_ids))
         }
     }
     sort(unique(network))

@@ -28,28 +28,28 @@ get_flow <- function(path_to_file, ignore_source = NULL) {
 #' @param prune_types character: Optionally prune nodes based on type (typically
 #' "function" and/or "mutate"). Use NULL to override the default of "function".
 #'
-#' @return Returns list of nodes/edges and (optionally) pruned_ids
+#' @return Returns list of nodes/edges and (optionally) prune_ids
 #' @export
-prune_flow <- function(
+add_prune_ids <- function(
     flow, focus_node = NULL, prune_labels = NULL, prune_types = "function"
 ) {
-    pruned_ids <- c(
+    prune_ids <- c(
         get_pruned_types(flow[["nodes"]], prune_types),
         get_pruned_labels(flow[["nodes"]], prune_labels)
     )
     if (!is.null(focus_node)) {
         ids <- get_network(focus_node, flow[["edges"]])
-        pruned_ids <- c(pruned_ids, setdiff(flow[["nodes"]][["id"]], ids))
+        prune_ids <- c(prune_ids, setdiff(flow[["nodes"]][["id"]], ids))
     }
-    if (!all(is.na(pruned_ids))) {
-        flow[["pruned_ids"]] <- pruned_ids
+    if (!all(is.na(prune_ids))) {
+        flow[["prune_ids"]] <- prune_ids
     }
     flow
 }
 
 #' Prepare flow (nodes, edges) for graphing
 #'
-#' @inheritParams prune_flow
+#' @inheritParams add_prune_ids
 #' @param label_option character: Either "both", "assign", "function" or
 #' "auto" (which uses "assign" for input nodes and "function" for others).
 #' @param hover_code character: Either "node", "network", or NULL. If "node", code
@@ -58,13 +58,13 @@ prune_flow <- function(
 #'
 #' @return Returns a modified list of nodes/edges
 #' @export
-parameterize_flow <- function(flow, label_option = "auto", hover_code = "node") {
+add_graph_detail <- function(flow, label_option = "auto", hover_code = "node") {
     nodes <- add_node_label(flow[["nodes"]], label_option)
     nodes <- add_node_color(nodes)
-    nodes <- add_node_hover(nodes, flow[["edges"]], flow[["pruned_ids"]], hover_code)
+    nodes <- add_node_hover(nodes, flow[["edges"]], flow[["prune_ids"]], hover_code)
     
-    if (!is.null(flow[["pruned_ids"]])) {
-        flow[["edges"]] <- prune_node_edges(flow[["edges"]], flow[["pruned_ids"]])
+    if (!is.null(flow[["prune_ids"]])) {
+        flow[["edges"]] <- prune_node_edges(flow[["edges"]], flow[["prune_ids"]])
     }
     # nodes without edges will always be dropped
     nodes <- nodes[
@@ -76,7 +76,7 @@ parameterize_flow <- function(flow, label_option = "auto", hover_code = "node") 
 
 #' Convert nodes/edges into a dotfile format for dataflow graph
 #'
-#' @inheritParams prune_flow
+#' @inheritParams add_prune_ids
 #'
 #' @return Returns a string in a dotfile-compatible format
 #' @export
@@ -89,24 +89,24 @@ make_dot <- function(flow) {
 #' Plot dataflow graph from R code
 #'
 #' @inheritParams get_flow
-#' @inheritParams prune_flow
-#' @inheritParams parameterize_flow
+#' @inheritParams add_prune_ids
+#' @inheritParams add_graph_detail
 #' @param interactive logical: If TRUE, will use \code{\link[visNetwork]{visNetwork}}
 #' for interactivity, otherwise \code{\link[DiagrammeR]{grViz}}
 #'
 #' @return Returns a rendered data flow graph
 #' @export
-plot_flow <- function(
+graph <- function(
     path_to_file, ignore_source = NULL, interactive = TRUE,
     focus_node = NULL, prune_labels = NULL, prune_types = "function",
     label_option = "auto", hover_code = "node"
 ) {
     flow <- get_flow(path_to_file, ignore_source)
-    flow <- prune_flow(flow, focus_node, prune_labels, prune_types)
-    flow <- parameterize_flow(flow, label_option, hover_code)
+    flow <- add_prune_ids(flow, focus_node, prune_labels, prune_types)
+    flow <- add_graph_detail(flow, label_option, hover_code)
     dot <- make_dot(flow)
     if (interactive) {
-        prep_visjs(flow) |> plot_visjs()
+        prep_visjs(flow) |> graph_visjs()
     } else {
         make_dot(flow) |> DiagrammeR::grViz()
     }

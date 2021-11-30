@@ -3,9 +3,9 @@
 # Do some preparation for getting the format for visNetwork()
 prep_visjs <- function(flow) {
     nodes <- flow[["nodes"]]
-    nodes[["group"]] <- nodes[["node_type"]]
+    nodes[["group"]] <- nodes[["type"]]
     nodes[["title"]] <- nodes[["hover"]]
-    nodes[["node_type"]] <- NULL
+    nodes[["type"]] <- NULL
     nodes[["hover"]] <- NULL
     edges <- flow[["edges"]]
     edges[["arrows"]] <- "to"
@@ -13,7 +13,7 @@ prep_visjs <- function(flow) {
 }
 
 # Plot the flow using the visNetwork package
-plot_visjs <- function(flow) {
+graph_visjs <- function(flow) {
     visNetwork::visNetwork(nodes = flow[["nodes"]], edges = flow[["edges"]]) |>
         visNetwork::visOptions(
             highlightNearest = list(

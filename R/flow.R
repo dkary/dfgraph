@@ -14,7 +14,7 @@ add_node_type <- function(nodes, edges) {
     non_mutate_ids <- unique(edges_pruned[duplicated(edges_pruned$to), "to"])
     mutate_ids <- edges_pruned[!edges_pruned[["to"]] %in% non_mutate_ids, "to"]
     
-    nodes[["node_type"]] <- ifelse(
+    nodes[["type"]] <- ifelse(
         nodes[["id"]] %in% function_ids, "function",
         ifelse(
             is.na(nodes[["assign"]]), "terminal",
@@ -31,7 +31,7 @@ add_node_type <- function(nodes, edges) {
 
 # Add a column to nodes that shows what will be displayed on hover
 # To be called from add_dot_attributes()
-add_node_hover <- function(nodes, edges, pruned_ids = NULL, hover_code = "node") {
+add_node_hover <- function(nodes, edges, prune_ids = NULL, hover_code = "node") {
     # NOTE: this function will only work correctly if nodes is sorted by ID
     # Not great, but seems okay at this stage
     nodes <- nodes[order(nodes[["id"]]),]
@@ -42,13 +42,13 @@ add_node_hover <- function(nodes, edges, pruned_ids = NULL, hover_code = "node")
     ]
     if (is.null(hover_code)) {
         x <- paste0("# Node", nodes[["id"]])
-    } else if (is.null(pruned_ids) && hover_code != "network") {
+    } else if (is.null(prune_ids) && hover_code != "network") {
         # In this case every node shows only it's own code
         x <- paste0("# Node ", nodes[["id"]], "\n", nodes[["code"]])
     } else {
         x <- sapply(1:nrow(nodes), function(node) {
             if (hover_code == "node") {
-                ids <- get_network(node, edges, pruned_ids)
+                ids <- get_network(node, edges, prune_ids)
                 ids <- setdiff(ids, function_ids) # don't want to display function code
             } else {
                 ids <- get_network(node, edges)
@@ -97,7 +97,7 @@ get_dot_label <- function(
 add_node_label <- function(nodes, label_option = "auto") {
     x <- nodes
     x[["label"]] <- get_dot_label(
-        x[["assign"]], x[["member"]], x[["function"]], x[["node_type"]], 
+        x[["assign"]], x[["member"]], x[["function"]], x[["type"]], 
         label_option
     )
     x
@@ -117,7 +117,7 @@ get_color_palette <- function(use_colorbrewer = FALSE) {
         colors <- c("#ffffcc", "#b3d1ff", "#f9ffe6", "#ffc266")
     }
     data.frame(
-        "node_type" = c("function", "input", "mutate", "assemble", "terminal"),
+        "type" = c("function", "input", "mutate", "assemble", "terminal"),
         "color" = c(colors[1:3], colors[3], colors[4])
     )
 }
@@ -125,7 +125,7 @@ get_color_palette <- function(use_colorbrewer = FALSE) {
 # Add a color column to nodes
 add_node_color <- function(nodes) {
     colors <- get_color_palette()
-    x <- merge(nodes, colors, by = "node_type", all.x = TRUE)
+    x <- merge(nodes, colors, by = "type", all.x = TRUE)
     x <- x[order(x[["id"]]),]
     rownames(x) <- NULL
     x

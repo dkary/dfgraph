@@ -18,11 +18,11 @@ remotes::install_github("dkary/dfgraph")
 
 ## Basic Usage
 
-Run `dfgraph::plot_flow("path_to_R_or_Rmd_file")` from the R console (which leverages the [DiagrammeR](https://github.com/rich-iannone/DiagrammeR) package with a   [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) format under the hood).
+Run `dfgraph::graph("path_to_R_or_Rmd_file")` from the R console (which leverages the [DiagrammeR](https://github.com/rich-iannone/DiagrammeR) package with a   [DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) format under the hood).
 
 ```r
 # Example
-dfgraph::plot_flow(
+dfgraph::graph(
     "testdat/svy-weight.R",
     # exclude diagnostic checks from the plot
     prune_labels = c("count", "summary", "sapply", "glimpse", "all.equal")
@@ -38,7 +38,7 @@ dfgraph::plot_flow(
 Some nodes have only one dependency (referred to as "mutates"), and we can collapse these into their parent nodes:
 
 ```r
-dfgraph::plot_flow(
+dfgraph::graph(
     "testdat/svy-weight.R", prune_types = c("function", "mutate"),
     prune_labels = c("count", "summary", "sapply", "glimpse", "all.equal")
 )
@@ -51,7 +51,7 @@ dfgraph::plot_flow(
 Focus on the network of a specified node (which you can reveal interactively by hovering over a node):
 
 ```r
-dfgraph::plot_flow(
+dfgraph::graph(
     "testdat/svy-weight.R", prune_types = c("function", "mutate"), focus_node = 20, 
 )
 ```
@@ -63,7 +63,7 @@ dfgraph::plot_flow(
 We can also display both assignment and primary function for each node:
 
 ```r
-dfgraph::plot_flow(
+dfgraph::graph(
     "testdat/svy-weight.R", prune_types = c("function", "mutate"), focus_node = 20, 
     label_option = "both"
 )

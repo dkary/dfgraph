@@ -135,12 +135,12 @@ parse_nodes <- function(exprs) {
     nodes[, c("id", "assign", "member", "function", "code")]
 }
 
-# Identify node IDs to prune (based on "node_type")
+# Identify node IDs to prune (based on "type")
 get_pruned_types <- function(nodes, prune_types) {
     if (is.null(prune_types)) {
         return(NULL)
     }
-    nodes[nodes[["node_type"]] %in% prune_types, "id"]
+    nodes[nodes[["type"]] %in% prune_types, "id"]
 }
 
 # Identify node IDs to prune (based on the node label)

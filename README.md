@@ -1,23 +1,11 @@
 
 # dfgraph
 
-Visualize how data flows through an R script to illuminate unfamiliar workflows and inform your coding decisions. 
-
-We data scientists don't exactly write beautiful production-quality code. Let's be honest, it's more likely to be bewildering spaghetti code, and if you're like me, you've gotten to enjoy the exquisite torture of deciphering someone else's "workflow" (or your own for that matter). Why not profit from my past suffering with a tool to help navigate this quagmire of noodly computerspeak?
-
-### Features
-
-- Parse and visualize a dependency graph for R expressions (as nodes) within an R or Rmd script (recursively parsing any `source` files included therein).
-
-- Selectively prune (i.e., exclude) nodes from the visual while propagating their dependencies (including any global dependencies of assigned functions).
-
-- Optionally focus only on the network of dependencies for a specified node.
-
-- Display R code for an expression (node) on hover, optionally including all preceeding code which the selected expression depends upon.
+Why visualize R code you ask? Well now, we data scientists don't exactly write beautiful production-quality code. Let's be honest, it's more likely to be bewildering spaghetti code. If you're like me, dear reader, you've enjoyed the exquisite torture of deciphering an existing "workflow", perhaps one you yourself created! Why not profit from this suffering with a tool to help navigate this quagmire of confounding computerspeak?
 
 ### Note 
 
-This package is in a **pre-alpha state** and not yet intended for serious use (although you're welcome to test/experiment). There will likely be major changes in the near future (e.g., to enable interactivity). There are also certain (probably fundamental) [limitations](#limitations) to parsing dependencies from an R script, although I think `dfgraph` can cover enough of the common patterns to prove useful.
+This package is in a **pre-alpha state** and I expect major changes in the near future (e.g., to enable interactivity). There are also certain (probably fundamental) [limitations](#limitations) to parsing dependencies from an R script, although I think `dfgraph` can still cover enough of the common patterns to prove useful.
 
 ## Installation
 
@@ -90,3 +78,13 @@ The most obvious limitation is that code is inherently flexible, and I won't be 
 - We can misidentify dependencies due to name scoping (e.g., dataframe$column "d" vs. global variable "d") with non-standard evaluation (e.g., in `dplyr`).
 
 However, I suspect that I can capture enough of the common data science coding patterns for the package to nonetheless be useful (more details in [Proof of Concept](ref/POC.md)).
+
+## Dry Feature List (Yawn)
+
+- Parse and visualize a dependency graph for R expressions (as nodes) within an R or Rmd script (recursively parsing any `source` files included therein).
+
+- Selectively prune (i.e., exclude) nodes from the visual while propagating their dependencies (including any global dependencies of assigned functions).
+
+- Optionally focus only on the network of dependencies for a specified node.
+
+- Display R code for an expression (node) on hover, optionally including all preceeding code which the selected expression depends upon.

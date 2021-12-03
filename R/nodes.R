@@ -74,21 +74,23 @@ get_function <- function(x) {
 # Get assignments, functions, and text of an expression
 # - x: one element of list of expressions returned by parse_script()
 parse_statement <- function(x) {
-    out <- get_parse_data(x)
-    out[["assign"]] <- NA
-    out[["member"]] <- NA
+    v_assign <- NA
+    v_member <- NA
+    v_code <- paste(deparse(x), collapse = "\n")
     if (rlang::is_call(x, c("<-", "="))) {
         if (rlang::is_call(x[[2]], c("$", "[", "[["))) {
-            out[["assign"]] <- as.character(x[[2]][[2]])[1]
-            out[["member"]] <- as.character(x[[2]][[3]])[1]
+            v_assign <- as.character(x[[2]][[2]])[1]
+            v_member <- as.character(x[[2]][[3]])[1]
         } else {
-            out[["assign"]] <- as.character(x[[2]])[1]
+            v_assign <- as.character(x[[2]])[1]
         }
-        out[["function"]] <- get_function(x[[3]])
+        v_function <- get_function(x[[3]])
     } else {
-        out[["function"]] <- get_function(x)
+        v_function <- get_function(x)
     }
-    out[out[["parent"]]==0, c("assign", "member", "function", "code")]
+    out <- data.frame(v_assign, v_member, v_function, v_code)
+    names(out) <- c("assign", "member", "function", "code")
+    out
 }
 
 # Pull node information for a given expression (assignment or function)

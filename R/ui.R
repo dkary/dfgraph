@@ -15,7 +15,7 @@ get_flow <- function(path_to_file, ignore_source = NULL) {
     edges <- get_depends(nodes)
     nodes <- add_node_type(nodes, edges)
     rownames(nodes) <- NULL
-    list("nodes" = nodes, "edges" = edges)
+    list("exprs" = exprs, "nodes" = nodes, "edges" = edges)
 }
 
 #' Identify nodes to prune

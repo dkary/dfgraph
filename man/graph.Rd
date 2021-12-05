@@ -7,7 +7,7 @@
 graph(
   path_to_file,
   ignore_source = NULL,
-  interactive = TRUE,
+  interactive = FALSE,
   focus_node = NULL,
   prune_labels = NULL,
   prune_types = "function",

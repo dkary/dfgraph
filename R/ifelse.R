@@ -1,4 +1,5 @@
 # functions to parse if/else expressions
+# TODO: might be good to refactor at some point: high dependency functions here
 
 # Parse an if/else expression into individual parsed statements
 # Returns a dataframe like from parse_statement(), but with a "conditional" col
@@ -15,7 +16,13 @@ ifelse_parse_statement <- function(x, con = "if") {
         t <- x
     }
     # TODO: may want to specifically handle "{", rather than implicitly here
-    out <- lapply(2:length(t), function(i) parse_statement(t[[i]]))
+    out <- lapply(2:length(t), function(i) {
+        if (rlang::is_call(t[[i]], "if")) {
+            ifelse_parse(t[[i]])
+        } else {
+            parse_statement(t[[i]])
+        }
+    })
     out <- do.call(rbind, out)
     out[["conditional"]] <- v_conditional
     # element 4 is present when there are more if/else conditions

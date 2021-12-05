@@ -1,7 +1,10 @@
 library(dfgraph)
 
 # TODO: fix the 4 failing tests:
-# - 4 fail for nested if/else
+# - 4 fail for nested if/else (recursive case)
+#   this in theory shouldn't be difficult
+#   but the high-dependency functions might complicate things
+#   At least I have tests to streamline refactoring if needed!
 
 expect_col_equal <- function(expr, expected, col) {
     df <- ifelse_parse(expr)
@@ -96,7 +99,6 @@ test_that("values are correctly parsed for a nested if/else expression", {
             b <- h(a)
         } 
     )
-    # TODO: these 4 fail because I'm not recursively handling if yet
     expect_col_equal(x, c("b", "b"), col = "assign")
     expect_col_equal(x, c("f", "g"), col = "function")
     expect_code_equal(1, x, quote(

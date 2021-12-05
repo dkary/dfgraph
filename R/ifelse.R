@@ -57,26 +57,57 @@ ifelse_flag_node <- function(df, name) {
     x[c("id", "node")]
 }
 
+# Combine all relevant code (to display) for a given node
+# To be called from ifelse_collapse()
+# - df_node: dataframe with just those rows to collapse to one node
+# - df_conditions: dataframe of conditions with 2 cols (conditional, cond_id)
+get_node_code <- function(df_node, df_conditions) {
+    cond_id <- 0
+    code_all <- ""
+    while (cond_id < max(df_node[["cond_id"]])) {
+        cond_id <- cond_id + 1
+        df_slct <- df_node[df_node[["cond_id"]] == cond_id, ]
+        if (nrow(df_slct) == 0) {
+            # earlier missing conditionals still need to be included
+            # otherwise, we wouldn't have a complete expression
+            cond <- df_conditions[
+                df_conditions[["cond_id"]] == cond_id, "conditional"
+            ]
+            code_all <- paste(code_all, cond, "{\n}")
+        } else {
+            code_all <- paste(
+                code_all, df_slct[["conditional"]], "{\n", df_slct[["code"]], "\n}"
+            )
+        }
+    }
+    code_all
+}
+
 # Combine symmetric nodes in a parsed dataframe
 # Returns a dataframe in the same format as parse_statement()
 # - df: dataframe returned by ifelse_add_name()
 ifelse_collapse <- function(df) {
+    # Get a condition table (for identifying code to display for each node)
+    df_conditions <- data.frame("conditional" = unique(df[["conditional"]]))
+    df_conditions[["cond_id"]] <- 1:nrow(df_conditions)
+    
     # Flag each row with the relevant node (for combining)
     relate <- lapply(unique(df[["name"]]), function(nm) ifelse_flag_node(df, nm))
     df_relate <- do.call(rbind, relate)
     
     # Aggregate by "node" from df_relate
-    df_merge <- merge(df, df_relate, by = "id", all.x = TRUE)
-    df_merge[["code_all"]] <- paste0(
-        df_merge[["conditional"]], " {\n  ", df_merge[["code"]], " \n}"
-    )
-    out <- split(df_merge, df_merge$node) |> lapply(function(x) {
+    df_merge <- merge(df, df_relate, by = "id", all.x = TRUE) |>
+        merge(df_conditions, by = "conditional", all.x = TRUE)
+    df_merge <- df_merge[order(df_merge[["cond_id"]]), ] # maybe not necessary
+    
+    out <- split(df_merge, df_merge[["node"]]) |> lapply(function(x) {
+        code_all <- get_node_code(x, df_conditions)
         data.frame(
             "id" = max(x[["id"]]),
             "assign" = unique(x[["assign"]])[1], # should be only 1
             "member" = unique(x[["member"]])[1], # should be only 1
             "function" = unique(x[["function"]])[1],
-            "code" = paste(x[["code_all"]], collapse = " ")
+            "code" = code_all
         )
     })
     out <- do.call(rbind, out)

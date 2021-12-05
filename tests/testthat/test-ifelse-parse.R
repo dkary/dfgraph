@@ -1,7 +1,6 @@
 library(dfgraph)
 
-# TODO: fix the 5 failing tests:
-# - 1 fails for asymmetric conditionals
+# TODO: fix the 4 failing tests:
 # - 4 fail for nested if/else
 
 expect_col_equal <- function(expr, expected, col) {
@@ -11,7 +10,9 @@ expect_col_equal <- function(expr, expected, col) {
 
 expect_code_equal <- function(rownum, expr, expected) {
     df <- ifelse_parse(expr)
-    expect_equal(rlang::parse_expr(df[["code"]][rownum]), expected)
+    eval(bquote(
+        expect_equal(rlang::parse_expr(df[["code"]][.(rownum)]), expected)
+    ))
 }
 
 test_that("values are correctly parsed for an if/else asymmetric expression", {
@@ -20,18 +21,30 @@ test_that("values are correctly parsed for an if/else asymmetric expression", {
     x <- quote(
         if (param == 1) {
             a <- f(b)
-        } else {
+        } else if (param == 2) {
             c <- g(b)
+        } else {
+            a <- g(b)
+            c <- h(b)
         }
     )
     expect_col_equal(x, c("a", "c"), col = "assign")
     expect_col_equal(x, c("f", "g"), col = "function")
     expect_code_equal(1, x, quote(
-        if (param == 1) { a <- f(b)}
+        if (param == 1) { 
+            a <- f(b)
+        } else if (param == 2) {
+        } else {
+            a <- g(b)
+        }
     ))
-    # TODO: this one fails b/c it doesn't currently include the 1st condition
     expect_code_equal(2, x, quote(
-        if (param == 1) { } else { c <- g(b)}
+        if (param == 1) { 
+        } else if (param == 2) { 
+            c <- g(b) 
+        } else { 
+            c <- h(b)
+        }
     ))
 })
 

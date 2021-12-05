@@ -27,12 +27,18 @@ test_that("values are correctly parsed for an if/else symmetric expression", {
     expect_col_equal(x, c("a", NA), col = "assign")
     expect_col_equal(x, c("f", "output"), col = "function")
     expect_code_equal(1, x, quote(
-        if (param) { a <- f(b) } 
-        else { a <- g(b) }
+        if (param) { 
+            a <- f(b) 
+        } else { 
+            a <- g(b) 
+        }
     ))
     expect_code_equal(2, x, quote(
-        if (param) { output(a) } 
-        else { output(a) }
+        if (param) { 
+            output(a) 
+        } else { 
+            output(a) 
+        }
     ))
 })
 
@@ -148,7 +154,9 @@ test_that("values are correctly parsed for an if/else with overwrite assignments
     expect_col_equal(x, c("a", "a"), col = "assign")
     expect_col_equal(x, c("f", "h"), col = "function")
     expect_code_equal(1, x, quote(
-        if (param == 1) { a <- f(b) }
+        if (param == 1) { 
+            a <- f(b) 
+        }
     ))
     expect_code_equal(2, x, quote(
         if (param == 1) { 
@@ -182,20 +190,30 @@ test_that("values are correctly parsed for a complex if/else expression", {
     expect_col_equal(x, c("a", "c", "c", "c", NA), col = "assign")
     expect_col_equal(x, c("f", "h", "g", NA, "output"), col = "function")
     expect_code_equal(2, x, quote(
-        if (param == 1) {} 
-        else if (stuff) {} 
-        else { c <- h(a) }
+        if (param == 1) {
+        } else if (stuff) {
+        } else { 
+            c <- h(a) 
+        }
     ))
     expect_code_equal(3, x, quote(
-        if (param == 1) { c <- g(a) } 
-        else if (stuff) {} 
-        else { c <- z(c) }
+        if (param == 1) { 
+            c <- g(a) 
+        } else if (stuff) {
+        } else { 
+            c <- z(c) 
+        }
     ))
     expect_code_equal(5, x, quote(
-        if (param == 1) { output(a) } 
-        else if (stuff) { 
-            if (a > 2) { output(a)} 
-        } else { output(a) }
+        if (param == 1) { 
+            output(a) 
+        } else if (stuff) { 
+            if (a > 2) { 
+                output(a)
+            } 
+        } else { 
+            output(a) 
+        }
     ))
     
 })

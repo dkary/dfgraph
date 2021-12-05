@@ -97,7 +97,7 @@ make_dot <- function(flow) {
 #' @return Returns a rendered data flow graph
 #' @export
 graph <- function(
-    path_to_file, ignore_source = NULL, interactive = TRUE,
+    path_to_file, ignore_source = NULL, interactive = FALSE,
     focus_node = NULL, prune_labels = NULL, prune_types = "function",
     label_option = "auto", hover_code = "node"
 ) {

@@ -99,13 +99,21 @@ parse_statement <- function(x) {
 # - recurse: expressions beginning with these will lead to recursion
 parse_expression <- function(
     x, 
+    # TODO: revisit what is needed here
+    # - probably no need to exclude
+    # - recurse is maybe just with "for"
     exclude = c("library", "print", "source"), 
-    recurse = c("if", "==", "{", "for", ":")
+    recurse = c("==", "{", "for", ":")
 ) {
     if (is.call(x)) {
         if (rlang::is_call(x, exclude)) {
             # an empty dataframe simplifies downstream operations
             data.frame()
+        } else if (rlang::is_call(x, "if")) {
+            tmp <- ifelse_parse(x)
+            tmp[["code"]] <- tmp[["code_all"]]
+            tmp[["code_all"]] <- NULL
+            tmp
         } else if (!rlang::is_call(x, recurse)) {
             parse_statement(x)
         } else {

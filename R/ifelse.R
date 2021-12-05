@@ -2,7 +2,9 @@
 # TODO: might be good to refactor at some point: high dependency functions here
 
 # Parse an if/else expression into individual parsed statements
-# Returns a dataframe like from parse_statement(), but with a "conditional" col
+# Returns a dataframe like from parse_statement(), but with 2 new cols:
+# 1. a "conditional" col the shows the specific condition for that statement
+# 2. a "code_all" code that typically matches "code" (except for nested if/else)
 # - x: one element of list of expressions returned by parse_script()
 ifelse_parse_statement <- function(x, con = "if") {
     if (rlang::is_call(x, "if")) {
@@ -20,7 +22,9 @@ ifelse_parse_statement <- function(x, con = "if") {
         if (rlang::is_call(t[[i]], "if")) {
             ifelse_parse(t[[i]])
         } else {
-            parse_statement(t[[i]])
+            tmp <- parse_statement(t[[i]])
+            tmp[["code_all"]] <- tmp[["code"]]
+            tmp
         }
     })
     out <- do.call(rbind, out)
@@ -83,7 +87,7 @@ get_node_code <- function(df_node, df_conditions) {
             code_all <- paste(code_all, cond, "{\n}")
         } else {
             code_all <- paste(
-                code_all, df_slct[["conditional"]], "{\n", df_slct[["code"]], "\n}"
+                code_all, df_slct[["conditional"]], "{\n", df_slct[["code_all"]], "\n}"
             )
         }
     }
@@ -105,7 +109,7 @@ ifelse_collapse <- function(df) {
     # Aggregate by "node" from df_relate
     df_merge <- merge(df, df_relate, by = "id", all.x = TRUE) |>
         merge(df_conditions, by = "conditional", all.x = TRUE)
-    df_merge <- df_merge[order(df_merge[["cond_id"]]), ] # maybe not necessary
+    df_merge <- df_merge[order(df_merge[["id"]]), ]
     
     out <- split(df_merge, df_merge[["node"]]) |> lapply(function(x) {
         code_all <- get_node_code(x, df_conditions)
@@ -114,12 +118,13 @@ ifelse_collapse <- function(df) {
             "assign" = unique(x[["assign"]])[1], # should be only 1
             "member" = unique(x[["member"]])[1], # should be only 1
             "function" = unique(x[["function"]])[1],
-            "code" = code_all
+            "code" = x[["code"]][1],
+            "code_all" = code_all
         )
     })
     out <- do.call(rbind, out)
     names(out)[4] <- "function"
-    out[order(out[["id"]]), c("assign", "member", "function", "code")]
+    out[order(out[["id"]]), c("assign", "member", "function", "code", "code_all")]
 }
 
 # Parse an if/else expression into multiple nodes
@@ -128,5 +133,7 @@ ifelse_collapse <- function(df) {
 ifelse_parse <- function(x) {
     df <- ifelse_parse_statement(x)
     df <- ifelse_add_name(df)
-    ifelse_collapse(df)
+    out <- ifelse_collapse(df)
+    rownames(out) <- NULL
+    out
 }

@@ -1,11 +1,5 @@
 library(dfgraph)
 
-# TODO: fix the 4 failing tests:
-# - 4 fail for nested if/else (recursive case)
-#   this in theory shouldn't be difficult
-#   but the high-dependency functions might complicate things
-#   At least I have tests to streamline refactoring if needed!
-
 expect_col_equal <- function(expr, expected, col) {
     df <- ifelse_parse(expr)
     eval(bquote(expect_equal(df[[.(col)]], .(expected))))
@@ -14,9 +8,33 @@ expect_col_equal <- function(expr, expected, col) {
 expect_code_equal <- function(rownum, expr, expected) {
     df <- ifelse_parse(expr)
     eval(bquote(
-        expect_equal(rlang::parse_expr(df[["code"]][.(rownum)]), expected)
+        expect_equal(rlang::parse_expr(df[["code_all"]][.(rownum)]), expected)
     ))
 }
+
+test_that("values are correctly parsed for an if/else symmetric expression", {
+    # The if/else should resolve to 2 nodes (assigned "a" and output func)
+    # Called "symmetric" since all conditions have matching statements
+    x <- quote(
+        if (param) {
+            a <- f(b)
+            output(a)
+        } else {
+            a <- g(b)
+            output(a)
+        }
+    )
+    expect_col_equal(x, c("a", NA), col = "assign")
+    expect_col_equal(x, c("f", "output"), col = "function")
+    expect_code_equal(1, x, quote(
+        if (param) { a <- f(b) } 
+        else { a <- g(b) }
+    ))
+    expect_code_equal(2, x, quote(
+        if (param) { output(a) } 
+        else { output(a) }
+    ))
+})
 
 test_that("values are correctly parsed for an if/else asymmetric expression", {
     # The if/else should resolve to 2 nodes
@@ -51,7 +69,7 @@ test_that("values are correctly parsed for an if/else asymmetric expression", {
     ))
 })
 
-test_that("values are correctly parsed for an if/else symmetric expression", {
+test_that("values are correctly parsed for a long if/else symmetric expression", {
     # The if/else should resolve to 2 nodes, one per assigned variable
     # Called "symmetric" since each variable is defined in every condition
     x <- quote(
@@ -139,4 +157,45 @@ test_that("values are correctly parsed for an if/else with overwrite assignments
             a <- g(b)
         }
     ))
+})
+
+test_that("values are correctly parsed for a complex if/else expression", {
+    # Expecting 5 nodes returned (1 for "a", 3 for "c", 1 for "output")
+    x <- quote(
+        if (param == 1) {
+            a <- f(b)
+            c <- g(a)
+            output(a)
+        } else if (stuff) {
+            a <- g(b)
+            if (a > 2) {
+                output(a)
+            }
+        } else {
+            a <- z(b)
+            c <- h(a)
+            c <- z(c)
+            c$person <- "humphry"
+            output(a)
+        }
+    )
+    expect_col_equal(x, c("a", "c", "c", "c", NA), col = "assign")
+    expect_col_equal(x, c("f", "h", "g", NA, "output"), col = "function")
+    expect_code_equal(2, x, quote(
+        if (param == 1) {} 
+        else if (stuff) {} 
+        else { c <- h(a) }
+    ))
+    expect_code_equal(3, x, quote(
+        if (param == 1) { c <- g(a) } 
+        else if (stuff) {} 
+        else { c <- z(c) }
+    ))
+    expect_code_equal(5, x, quote(
+        if (param == 1) { output(a) } 
+        else if (stuff) { 
+            if (a > 2) { output(a)} 
+        } else { output(a) }
+    ))
+    
 })

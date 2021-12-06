@@ -3,7 +3,9 @@
 
 Why visualize R code you ask? Well now, we data scientists don't exactly write beautiful production-quality code. Let's be honest, it's more likely to be bewildering spaghetti code. And if you're like me, dear reader, you've experienced the exquisite torture of deciphering an existing "workflow", perhaps one that you yourself created! Why not profit from my past suffering with a tool to help navigate this quagmire of confounding computerspeak?
 
-***Note***: *This package is in a pre-alpha state and I've planned major changes for the near future (e.g., to enable interactivity). There are also certain (probably fundamental) [limitations](#limitations) to parsing dependencies from an R script.*
+### Note
+
+This package is in a **pre-alpha state** and I've planned major changes for the near future (e.g., to enable interactivity). There are also certain (probably fundamental) [limitations](#limitations) to parsing dependencies from an R script.
 
 ## Installation
 

@@ -2,7 +2,6 @@
 # i.e., they take both nodes and edges as input
 
 # Determine display type of node (function, input, mutate, assemble, or terminal)
-# To be called from add_dot_attributes()
 add_node_type <- function(nodes, edges) {
     if (nrow(edges) == 0) {
         stop("The graph has no edges, so there is nothing to see here!", call. = FALSE)
@@ -30,7 +29,6 @@ add_node_type <- function(nodes, edges) {
 }
 
 # Add a column to nodes that shows what will be displayed on hover
-# To be called from add_dot_attributes()
 add_node_hover <- function(nodes, edges, prune_ids = NULL, hover_code = "node") {
     # NOTE: this function will only work correctly if nodes is sorted by ID
     # Not great, but seems okay at this stage
@@ -68,7 +66,7 @@ add_node_hover <- function(nodes, edges, prune_ids = NULL, hover_code = "node") 
 }
 
 # Identify node labels depending on specified option
-# To be called from add_dot_attributes()
+# To be called from add_node_label()
 get_dot_label <- function(
     assign_label, member_label, function_label, node_type, label_option
 ) {

@@ -4,10 +4,13 @@
 - [x] propagate function global dependencies
 - [x] set up R package structure (and roxygen docs)
 - [x] proof of concept
-- [ ] [if/else](#ifelse) node handling
+- [x] [if/else](#ifelse) node handling
 - [ ] [interactivity](#interactivity) and corresponding POC 
 - [ ] vignette and/or links to blog posts
-- [ ] testing
+- testing
+  + [x] ifelse_parse()
+  + [ ] get_depends()
+  + others
 
 ## Bugs
 
@@ -20,7 +23,7 @@
     + will need to do a bit of a refresher on error handling in R
 - [ ] `Error: syntax error in line 7 near 'answer'`: For the B4W > svy/3-flags.R. It occurs in a `tibble::tribble()` in lines 29 to 47
 - [ ] pipes in R expressions may translate to additional bins (within the node) because the pipe operator is used for binning in Graphviz record shapes (see the CodeTools results-multi.R example script)
-- [ ] but handling of for loops (and probably if/else). See CodeTools results-multi.R example
+- [ ] handling of for loops (and probably if/else). See CodeTools results-multi.R example
 
 ## Interactivity
 
@@ -111,10 +114,10 @@ if (...) {
 - [x] `edges_to_dot()`: converting parsed/dependencies to a useful format (e.g., dotfile)
 - [x] aliases (the target name) instead of the current name+ID displayed
 - [x] get a nice default appearance, potentially with a wrapper function
-- [ ] exclude_nodes (vector of nodes ids) that will be treated like assigned functions (i.e., their dependencies will be propagated, but they won't be displayed)
+- [x] exclude_nodes (vector of nodes ids) that will be treated like assigned functions (i.e., their dependencies will be propagated, but they won't be displayed)
     + use case: a parameter which is used in many nodes, clutters the display without being terribly informative
 - [ ] (maybe) a display_assignment = TRUE option that will show assigned variable names (instead of function name) for non-input nodes
-- [ ] exclude_text = TRUE option (removing corresponding code from the tooltip) to make for much more compact dot files
+- [x] exclude_text = TRUE option (removing corresponding code from the tooltip) to make for much more compact dot files
 - [ ] (maybe) convert nesting to pipes for display (or use the srcref attribute from parse())
 - [ ] (maybe) wrapper func to save to dotfile for editing and replotting
 - [x] correctly work with escaped quotes in tooltips

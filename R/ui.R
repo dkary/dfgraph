@@ -104,7 +104,6 @@ graph <- function(
     flow <- get_flow(path_to_file, ignore_source)
     flow <- add_prune_ids(flow, focus_node, prune_labels, prune_types)
     flow <- add_graph_detail(flow, label_option, hover_code)
-    dot <- make_dot(flow)
     if (interactive) {
         prep_visjs(flow) |> graph_visjs()
     } else {

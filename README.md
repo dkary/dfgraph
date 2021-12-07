@@ -3,9 +3,9 @@
 
 Why visualize R code you ask? Well now, we data scientists don't exactly write beautiful production-quality code. Let's be honest, it's more likely to be bewildering spaghetti code. And if you're like me, dear reader, you've experienced the exquisite torture of deciphering an existing "workflow", perhaps one that you yourself created! Why not profit from my past suffering with a tool to help navigate this quagmire of confounding computerspeak?
 
-### Note
+### Disclaimer
 
-This package is in a **pre-alpha state** and I've planned major changes for the near future (e.g., to enable interactivity). There are also certain (probably fundamental) [limitations](#limitations) to parsing dependencies from an R script.
+This package is in an experimental, **pre-alpha state**. There are certain (probably fundamental) [limitations](#limitations) to parsing dependencies from an R script. Also, packages that visualize within-script dependencies have been built before (e.g, [CodeDepends](https://github.com/duncantl/CodeDepends)), and it's not clear that they've caught on. However, I have plans to implement an interactive, exploratory interface, which may make for a more compelling feature set.
 
 ## Installation
 
@@ -75,10 +75,6 @@ The most obvious limitation is that code is inherently flexible, and I won't be 
 - We can misidentify dependencies due to name scoping (e.g., dataframe$column "d" vs. global variable "d") with non-standard evaluation (e.g., in `dplyr`).
 
 However, I suspect that I can capture enough of the common data science coding patterns for the package to nonetheless be useful (more details in [Proof of Concept](ref/POC.md)).
-
-### Existing Implementations
-
-It's also worth noting that this functionality has been implemented before (e.g.,  [CodeDepends](https://github.com/duncantl/CodeDepends)) and it's not clear that it has caught fire. I *think* that some interactive features will make such a package more compelling, but we'll see.
 
 ## Dry Feature List (Yawn)
 
